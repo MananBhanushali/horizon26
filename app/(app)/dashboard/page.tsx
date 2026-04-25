@@ -3,10 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/components/providers/AppProvider";
-import { formatINR } from "@/lib/format";
+import { personas } from "@/data/personas";
+import { formatINR, formatPercent } from "@/lib/format";
 
 export default function DashboardPage() {
-  const { persona, session } = useApp();
+  const { persona, personaId, setPersonaId } = useApp();
   const [period, setPeriod] = useState<"weekly" | "monthly">("weekly");
 
   const firstName = persona.name.split(" ")[0];
@@ -14,65 +15,89 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-5">
       {/* Greeting */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Hello, {firstName}!</h1>
-          <p className="text-sm text-[var(--color-ink-mid)] mt-1">
-            All information about your account in the sections below.
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight">Hello, {firstName}!</h1>
+        <p className="text-sm text-[var(--color-ink-mid)] mt-1">
+          {persona.tagline} — {persona.headlineStatus}.
+        </p>
       </div>
 
-      {/* Top row: Available balance + Cards */}
+      {/* Net worth + Allocation buckets */}
       <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_1fr] gap-5">
-        <BalanceCard
-          balance={persona.netWorth}
-          monthly={persona.monthlyContribution}
-        />
-        <CardsCarousel persona={persona} />
+        <NetWorthCard persona={persona} />
+        <AllocationCards persona={persona} />
       </section>
 
-      {/* Quick transfer + Statistics */}
+      {/* Persona switcher (Quick transfer style) + Statistics */}
       <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_1fr] gap-5">
-        <QuickTransfer />
-        <Statistics persona={persona} period={period} setPeriod={setPeriod} />
+        <PersonaRow personaId={personaId} setPersonaId={setPersonaId} />
+        <ProjectionStats persona={persona} period={period} setPeriod={setPeriod} />
       </section>
 
-      {/* Transactions + Milestones */}
+      {/* Instruments + Goals */}
       <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_1fr] gap-5">
-        <Transactions persona={persona} />
+        <Instruments persona={persona} />
         <MilestoneSnapshot persona={persona} />
       </section>
     </div>
   );
 }
 
-/* -------------------- Balance card -------------------- */
-function BalanceCard({ balance, monthly }: { balance: number; monthly: number }) {
+/* -------------------- Net worth -------------------- */
+function NetWorthCard({ persona }: { persona: ReturnType<typeof useApp>["persona"] }) {
+  const monthly = persona.monthlyContribution;
   return (
     <div className="h-card-lavender p-7">
       <div className="text-center">
-        <div className="text-sm text-[var(--color-ink-mid)]">Available balance</div>
+        <div className="text-sm text-[var(--color-ink-mid)]">Net worth</div>
         <div className="mt-1 text-5xl font-semibold tracking-tight">
-          {formatINR(balance, { compact: false }).replace("Rs.", "₹")}
+          {formatINR(persona.netWorth, { compact: true }).replace("Rs.", "₹")}
+        </div>
+        <div className="mt-1 text-xs text-[var(--color-ink-mid)]">
+          {monthly >= 0
+            ? `+${formatINR(monthly, { compact: true }).replace("Rs.", "₹")}/mo SIP active`
+            : `${formatINR(monthly, { compact: true }).replace("Rs.", "₹")}/mo SWP drawing`}
         </div>
       </div>
 
       <div className="mt-5 grid grid-cols-4 gap-3">
-        <ActionButton label="Send" href="/timeline" icon={<ArrowUpRight />} />
-        <ActionButton label="Request" href="/instruments" icon={<ArrowDown />} />
-        <ActionButton
-          label="Split bill"
-          href="/tax"
-          icon={<NoteIcon />}
-        />
-        <ActionButton label="Top up" href="/sandbox" icon={<PlusIcon />} />
+        <ActionButton label="Timeline" href="/timeline" icon={<TimelineIcon />} />
+        <ActionButton label="What-if" href="/sandbox" icon={<RefreshIcon />} />
+        <ActionButton label="Find SIP" href="/scenarios" icon={<TargetIcon />} />
+        <ActionButton label="Add goal" href="/timeline" icon={<PlusIcon />} />
       </div>
 
-      <div className="mt-5 text-center text-xs text-[var(--color-ink-mid)]">
-        {monthly >= 0
-          ? `+${formatINR(monthly, { compact: true }).replace("Rs.", "₹")}/mo SIP active`
-          : `${formatINR(monthly, { compact: true }).replace("Rs.", "₹")}/mo SWP drawing`}
+      <div className="mt-5 grid grid-cols-3 gap-3 text-center">
+        <Stat label="Plan confidence" value={`${persona.planConfidence}%`} />
+        <Stat label="Risk score" value={`${persona.riskScore}/100`} />
+        <Stat
+          label="Aggregate gap"
+          value={
+            persona.aggregateShortfall === 0
+              ? "₹0"
+              : formatINR(-persona.aggregateShortfall, { compact: true }).replace("Rs.", "₹")
+          }
+          tone={persona.aggregateShortfall === 0 ? "ok" : "warn"}
+        />
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value, tone }: { label: string; value: string; tone?: "ok" | "warn" }) {
+  const color =
+    tone === "warn"
+      ? "var(--color-warn-dim)"
+      : tone === "ok"
+      ? "var(--color-mint-dim)"
+      : "var(--color-ink)";
+  return (
+    <div className="rounded-2xl bg-white/60 px-3 py-2">
+      <div className="text-[10px] uppercase tracking-wider text-[var(--color-ink-dim)]">
+        {label}
+      </div>
+      <div className="text-sm font-semibold mt-0.5" style={{ color }}>
+        {value}
       </div>
     </div>
   );
@@ -87,69 +112,56 @@ function ActionButton({ label, href, icon }: { label: string; href: string; icon
   );
 }
 
-/* -------------------- Cards carousel -------------------- */
-function CardsCarousel({ persona }: { persona: ReturnType<typeof useApp>["persona"] }) {
-  // Synthesize 3 card tiles from instruments + persona allocation
-  const cards = [
-    {
-      label: "Other",
-      amount: persona.netWorth * (persona.allocation.debt / 100),
-      last4: "1499",
-      exp: "04/28",
-      tone: "white" as const,
-    },
-    {
-      label: "Family card",
-      amount: persona.netWorth * (persona.allocation.equity / 100),
-      last4: "1345",
-      exp: "01/28",
-      tone: "lavender" as const,
-    },
-    {
-      label: "Other",
-      amount: persona.netWorth * (persona.allocation.gold / 100 + persona.allocation.liquid / 100),
-      last4: "1872",
-      exp: "08/27",
-      tone: "white" as const,
-    },
+/* -------------------- Allocation buckets (VISA-style cards) -------------------- */
+function AllocationCards({ persona }: { persona: ReturnType<typeof useApp>["persona"] }) {
+  const buckets = [
+    { label: "Equity", pct: persona.allocation.equity, tone: "lavender" as const, sub: "Long-term growth" },
+    { label: "Debt", pct: persona.allocation.debt, tone: "white" as const, sub: "Stability anchor" },
+    { label: "Gold", pct: persona.allocation.gold, tone: "white" as const, sub: "Inflation hedge" },
+    { label: "Liquid", pct: persona.allocation.liquid, tone: "white" as const, sub: "Cushion" },
   ];
 
   return (
     <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 snap-x">
-      {cards.map((c, i) => (
-        <CardTile key={i} {...c} />
+      {buckets.map((b) => (
+        <BucketCard
+          key={b.label}
+          label={b.label}
+          pct={b.pct}
+          amount={persona.netWorth * (b.pct / 100)}
+          sub={b.sub}
+          tone={b.tone}
+        />
       ))}
     </div>
   );
 }
 
-function CardTile({
+function BucketCard({
   label,
+  pct,
   amount,
-  last4,
-  exp,
+  sub,
   tone,
 }: {
   label: string;
+  pct: number;
   amount: number;
-  last4: string;
-  exp: string;
+  sub: string;
   tone: "white" | "lavender";
 }) {
   const isLavender = tone === "lavender";
   return (
     <div
-      className={`shrink-0 snap-start w-[230px] rounded-3xl p-5 flex flex-col justify-between min-h-[180px] ${
-        isLavender
-          ? "h-card-lavender"
-          : "bg-white border border-[var(--color-edge)]"
+      className={`shrink-0 snap-start w-[200px] rounded-3xl p-5 flex flex-col justify-between min-h-[180px] ${
+        isLavender ? "h-card-lavender" : "bg-white border border-[var(--color-edge)]"
       }`}
     >
       <div className="flex items-start justify-between">
-        <div className="text-lg font-bold italic tracking-tight">VISA</div>
-        <button className="text-[var(--color-ink-mid)]" aria-label="More">
+        <div className="text-xs font-medium text-[var(--color-ink-mid)]">{sub}</div>
+        <Link href="/allocation" className="text-[var(--color-ink-mid)]" aria-label="More">
           <DotsIcon />
-        </button>
+        </Link>
       </div>
       <div>
         <div className="text-xs text-[var(--color-ink-mid)]">{label}</div>
@@ -158,52 +170,60 @@ function CardTile({
         </div>
       </div>
       <div className="flex items-center justify-between text-xs text-[var(--color-ink-mid)]">
-        <span>** {last4}</span>
-        <span>{exp}</span>
+        <span className="text-[var(--color-ink)] font-semibold">{pct}%</span>
+        <span>BL · v1</span>
       </div>
     </div>
   );
 }
 
-/* -------------------- Quick transfer -------------------- */
-function QuickTransfer() {
-  const contacts = [
-    { name: "Jake", color: "#a8d5ba" },
-    { name: "Dilan", color: "#f5c89a" },
-    { name: "Anna", color: "#e3b3d4" },
-    { name: "Jhali", color: "#a3aef5" },
-    { name: "Max", color: "#b8e0d2" },
-    { name: "Phill", color: "#c8c8ff" },
-  ];
-
+/* -------------------- Persona row (Quick-transfer-style) -------------------- */
+function PersonaRow({
+  personaId,
+  setPersonaId,
+}: {
+  personaId: string;
+  setPersonaId: (id: any) => void;
+}) {
+  const colors = ["#a8d5ba", "#f5c89a", "#e3b3d4", "#a3aef5", "#b8e0d2", "#c8c8ff"];
   return (
     <div className="h-panel p-6">
-      <div className="text-2xl font-semibold tracking-tight mb-4">Quick transfer</div>
+      <div className="text-2xl font-semibold tracking-tight mb-4">Switch persona</div>
       <div className="rounded-2xl bg-[var(--color-grid)] p-4 flex items-center gap-4 overflow-x-auto">
-        <button className="flex flex-col items-center gap-2 shrink-0">
-          <span className="h-circle-dark h-12 w-12">
-            <PlusIcon />
-          </span>
-          <span className="text-xs">Add</span>
-        </button>
-        {contacts.map((c) => (
-          <button key={c.name} className="flex flex-col items-center gap-2 shrink-0">
-            <span
-              className="grid place-items-center h-12 w-12 rounded-full text-sm font-semibold text-white"
-              style={{ background: c.color }}
+        {personas.map((p, i) => {
+          const active = p.id === personaId;
+          return (
+            <button
+              key={p.id}
+              onClick={() => setPersonaId(p.id)}
+              className="flex flex-col items-center gap-2 shrink-0"
+              title={p.title}
             >
-              {c.name.charAt(0)}
-            </span>
-            <span className="text-xs">{c.name}</span>
-          </button>
-        ))}
+              <span
+                className={`grid place-items-center h-12 w-12 rounded-full text-sm font-semibold text-white ${
+                  active ? "ring-2 ring-[var(--color-pill-dark)] ring-offset-2 ring-offset-[var(--color-grid)]" : ""
+                }`}
+                style={{ background: colors[i % colors.length] }}
+              >
+                {p.name.charAt(0)}
+              </span>
+              <span
+                className={`text-xs ${
+                  active ? "text-[var(--color-ink)] font-semibold" : "text-[var(--color-ink-mid)]"
+                }`}
+              >
+                {p.name.split(" ")[0]}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-/* -------------------- Statistics -------------------- */
-function Statistics({
+/* -------------------- Projection bars -------------------- */
+function ProjectionStats({
   persona,
   period,
   setPeriod,
@@ -212,16 +232,22 @@ function Statistics({
   period: "weekly" | "monthly";
   setPeriod: (p: "weekly" | "monthly") => void;
 }) {
-  // Derive 7 weekday bars from projection volatility
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const seeds = persona.projection.slice(0, 7);
-  const max = Math.max(...seeds.map((s) => s.bull));
-  const total = seeds.reduce((acc, s) => acc + s.base, 0) / 1000;
+  // 7 evenly spaced ages from current → retirement
+  const totalYears = persona.retirementAge - persona.age;
+  const step = Math.max(1, Math.floor(totalYears / 6));
+  const samples: { age: number; bull: number; base: number; bear: number }[] = [];
+  for (let i = 0; i < 7; i++) {
+    const age = persona.age + i * step;
+    const pt = persona.projection.find((p) => p.age >= age) ?? persona.projection[persona.projection.length - 1];
+    samples.push({ age, bull: pt.bull, base: pt.base, bear: pt.bear });
+  }
+  const max = Math.max(...samples.map((s) => s.bull));
+  const finalBase = samples[samples.length - 1].base;
 
   return (
     <div className="h-panel p-6">
       <div className="flex items-start justify-between gap-3">
-        <div className="text-2xl font-semibold tracking-tight">Statistics</div>
+        <div className="text-2xl font-semibold tracking-tight">Projection</div>
         <div className="flex items-center gap-2">
           <div className="rounded-full bg-[var(--color-grid)] p-1 flex gap-1">
             <button
@@ -232,7 +258,7 @@ function Statistics({
                   : "text-[var(--color-ink-mid)]"
               }`}
             >
-              Weekly
+              Bull
             </button>
             <button
               onClick={() => setPeriod("monthly")}
@@ -242,40 +268,43 @@ function Statistics({
                   : "text-[var(--color-ink-mid)]"
               }`}
             >
-              Monthly
+              Bear
             </button>
           </div>
-          <button className="grid place-items-center h-9 w-9 rounded-full bg-[var(--color-grid)] text-[var(--color-ink)]">
-            <CalendarIcon />
-          </button>
-          <button className="grid place-items-center h-9 w-9 rounded-full bg-[var(--color-pill-dark)] text-white">
+          <Link
+            href="/timeline"
+            className="grid place-items-center h-9 w-9 rounded-full bg-[var(--color-pill-dark)] text-white"
+            title="Open timeline"
+          >
             <BarsIcon />
-          </button>
+          </Link>
         </div>
       </div>
 
       <div className="mt-5 rounded-2xl bg-[var(--color-grid)] p-5">
         <div className="flex items-center justify-between">
-          <button className="grid place-items-center h-8 w-8 rounded-full bg-white text-[var(--color-ink)]">
-            <TrendIcon />
-          </button>
-          <button className="rounded-full bg-white px-3 py-1.5 text-xs font-medium flex items-center gap-1.5">
+          <div className="text-xs text-[var(--color-ink-mid)]">
+            At age {persona.retirementAge} (base)
+          </div>
+          <Link
+            href="/timeline"
+            className="rounded-full bg-white px-3 py-1.5 text-xs font-medium flex items-center gap-1.5"
+          >
             Details <ArrowUpRight />
-          </button>
+          </Link>
         </div>
 
         <div className="mt-3 text-3xl font-semibold tracking-tight">
-          {formatINR(total, { compact: true }).replace("Rs.", "₹")}
-          <span className="text-base text-[var(--color-ink-mid)] font-normal">.20</span>
+          {formatINR(finalBase, { compact: true }).replace("Rs.", "₹")}
         </div>
 
         <div className="mt-4 flex items-end justify-between gap-2 h-[140px]">
-          {days.map((d, i) => {
-            const seed = seeds[i] ?? seeds[seeds.length - 1];
-            const baseH = (seed.base / max) * 100;
-            const bullH = (seed.bull / max) * 100;
+          {samples.map((s, i) => {
+            const baseH = (s.base / max) * 100;
+            const high = period === "weekly" ? s.bull : s.bear;
+            const highH = (high / max) * 100;
             return (
-              <div key={d} className="flex flex-col items-center gap-2 flex-1">
+              <div key={i} className="flex flex-col items-center gap-2 flex-1">
                 <div className="flex items-end gap-1 h-[110px] w-full justify-center">
                   <div
                     className="w-3.5 rounded-t-full bg-[var(--color-lavender-deep)]"
@@ -283,10 +312,10 @@ function Statistics({
                   />
                   <div
                     className="w-3.5 rounded-t-full bg-[var(--color-pill-dark)]"
-                    style={{ height: `${bullH}%` }}
+                    style={{ height: `${highH}%` }}
                   />
                 </div>
-                <span className="text-[11px] text-[var(--color-ink-mid)]">{d}</span>
+                <span className="text-[11px] text-[var(--color-ink-mid)]">{s.age}</span>
               </div>
             );
           })}
@@ -296,51 +325,49 @@ function Statistics({
   );
 }
 
-/* -------------------- Transactions -------------------- */
-function Transactions({ persona }: { persona: ReturnType<typeof useApp>["persona"] }) {
-  const txns = persona.instruments.slice(0, 5).map((inst, i) => ({
-    name: inst.name,
-    sub: inst.subCategory,
-    amount: inst.monthly > 0 ? -inst.monthly : Math.abs(inst.monthly),
-    when: ["Today", "Today", "Yesterday", "Yesterday", "2d ago"][i] ?? "earlier",
-    time: ["04:31 AM", "08:12 AM", "06:45 PM", "11:02 AM", "—"][i] ?? "—",
-    color: ["#ff6b6b", "#34c08a", "#a3aef5", "#f0a93f", "#c8c8ff"][i] ?? "#c8c8ff",
-  }));
+/* -------------------- Instruments -------------------- */
+function Instruments({ persona }: { persona: ReturnType<typeof useApp>["persona"] }) {
+  const items = persona.instruments.slice(0, 5);
+  const colors: Record<string, string> = {
+    Equity: "#a3aef5",
+    Debt: "#34c08a",
+    Gold: "#f0a93f",
+    Liquid: "#c8c8ff",
+  };
 
   return (
     <div className="h-panel p-6">
       <div className="flex items-center justify-between mb-4">
-        <div className="text-2xl font-semibold tracking-tight">Transactions</div>
-        <Link href="/instruments" className="text-xs text-[var(--color-ink-mid)] hover:text-[var(--color-ink)]">
+        <div className="text-2xl font-semibold tracking-tight">Instruments</div>
+        <Link
+          href="/instruments"
+          className="text-xs text-[var(--color-ink-mid)] hover:text-[var(--color-ink)]"
+        >
           View all →
         </Link>
       </div>
 
       <ul className="flex flex-col gap-3">
-        {txns.map((t, i) => (
+        {items.map((inst) => (
           <li
-            key={i}
+            key={inst.id}
             className="flex items-center gap-4 rounded-2xl bg-[var(--color-grid)] px-4 py-3"
           >
             <span
               className="grid place-items-center h-11 w-11 rounded-full text-sm font-semibold text-white shrink-0"
-              style={{ background: t.color }}
+              style={{ background: colors[inst.category] ?? "#c8c8ff" }}
             >
-              {t.name.charAt(0)}
+              {inst.category.charAt(0)}
             </span>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium truncate">{t.name}</div>
+              <div className="text-sm font-medium truncate">{inst.name}</div>
               <div className="text-xs text-[var(--color-ink-mid)]">
-                {t.when} · {t.time}
+                {inst.subCategory} · {inst.taxBenefit}
               </div>
             </div>
-            <div
-              className={`text-sm font-semibold ${
-                t.amount < 0 ? "text-[var(--color-ink)]" : "text-[var(--color-mint-dim)]"
-              }`}
-            >
-              {t.amount < 0 ? "-" : "+"}
-              {formatINR(Math.abs(t.amount), { compact: false }).replace("Rs.", "₹")}
+            <div className="text-sm font-semibold">
+              {formatINR(inst.monthly, { compact: true }).replace("Rs.", "₹")}
+              <span className="text-[10px] text-[var(--color-ink-mid)] font-normal">/mo</span>
             </div>
           </li>
         ))}
@@ -349,7 +376,7 @@ function Transactions({ persona }: { persona: ReturnType<typeof useApp>["persona
   );
 }
 
-/* -------------------- Milestone snapshot -------------------- */
+/* -------------------- Milestones snapshot -------------------- */
 function MilestoneSnapshot({ persona }: { persona: ReturnType<typeof useApp>["persona"] }) {
   return (
     <div className="h-panel p-6">
@@ -397,27 +424,29 @@ function MilestoneSnapshot({ persona }: { persona: ReturnType<typeof useApp>["pe
 }
 
 /* -------------------- Icons -------------------- */
-function ArrowUpRight() {
+function TimelineIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M7 17 17 7" />
-      <path d="M8 7h9v9" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M3 12h18" />
+      <circle cx="7" cy="12" r="2" fill="currentColor" />
+      <circle cx="13" cy="12" r="2" fill="currentColor" />
+      <circle cx="19" cy="12" r="2" fill="currentColor" />
     </svg>
   );
 }
-function ArrowDown() {
+function RefreshIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 5v14" />
-      <path d="m6 13 6 6 6-6" />
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M21 4v4h-4" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" /><path d="M3 20v-4h4" />
     </svg>
   );
 }
-function NoteIcon() {
+function TargetIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="6" y="4" width="12" height="16" rx="2" />
-      <path d="M9 9h6M9 13h6M9 17h4" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" />
     </svg>
   );
 }
@@ -431,17 +460,7 @@ function PlusIcon() {
 function DotsIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-      <circle cx="12" cy="6" r="1.6" />
-      <circle cx="12" cy="12" r="1.6" />
-      <circle cx="12" cy="18" r="1.6" />
-    </svg>
-  );
-}
-function CalendarIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-      <rect x="4" y="6" width="16" height="14" rx="2" />
-      <path d="M4 10h16M9 4v4M15 4v4" />
+      <circle cx="12" cy="6" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="18" r="1.6" />
     </svg>
   );
 }
@@ -452,11 +471,10 @@ function BarsIcon() {
     </svg>
   );
 }
-function TrendIcon() {
+function ArrowUpRight() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 17 9 11l4 4 8-8" />
-      <path d="M14 4h7v7" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17 17 7" /><path d="M8 7h9v9" />
     </svg>
   );
 }
