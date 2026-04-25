@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, createContext, useCallback, useContext, useEffect, useState } from "react";
+import { X } from "lucide-react";
 
 export type Toast = {
   id: string;
@@ -52,7 +53,7 @@ function ToastCard({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
       <div className="flex items-center justify-between gap-3">
         <div className="h-mono text-[10px] uppercase tracking-wider opacity-80">{sev}</div>
         <button onClick={onDismiss} className="text-[var(--color-ink-dim)] hover:text-[var(--color-ink)] text-xs">
-          ✕
+          <X className="h-3.5 w-3.5" aria-hidden />
         </button>
       </div>
       <div className="text-sm font-medium text-[var(--color-ink)] mt-1">{toast.title}</div>

@@ -4,7 +4,7 @@
 
 import { buildProjection } from "@/data/projection";
 import type { Milestone, Persona, ProjectionPoint } from "@/lib/types";
-import type { UserFinances } from "@/components/providers/AppProvider";
+import type { UserFinances, UserInvestment } from "@/components/providers/AppProvider";
 
 const DEFAULT_INFLATION = 0.055;
 
@@ -21,12 +21,30 @@ export type LivePlan = {
   aggregateShortfall: number;
   onTrackCount: number;
   shortCount: number;
+  effectiveAnnualReturn: number;
   /** Per-instrument monthly amount, scaled to the user's actual savings. */
   scaledInstruments: { id: string; name: string; category: string; subCategory: string; monthly: number; taxBenefit: string; rationale: string }[];
 };
 
-export function deriveLivePlan(persona: Persona, finances: UserFinances, inflation = DEFAULT_INFLATION): LivePlan {
+export function deriveLivePlan(
+  persona: Persona,
+  finances: UserFinances,
+  investments: UserInvestment[],
+  inflation = DEFAULT_INFLATION
+): LivePlan {
   const monthlySIP = finances.monthlySavings;
+  const totalInvested = investments.reduce(
+    (acc, inv) => acc + Math.max(0, inv.currentValue),
+    0
+  );
+  const effectiveAnnualReturn =
+    totalInvested > 0
+      ? investments.reduce(
+          (acc, inv) =>
+            acc + Math.max(0, inv.currentValue) * inv.annualReturn,
+          0
+        ) / totalInvested
+      : persona.preTaxReturn;
   const startAge = persona.age;
   const endAge =
     persona.projection[persona.projection.length - 1]?.age ??
@@ -37,7 +55,7 @@ export function deriveLivePlan(persona: Persona, finances: UserFinances, inflati
     endAge,
     startBalance: persona.netWorth,
     monthlySIP,
-    baseReturn: persona.preTaxReturn,
+    baseReturn: effectiveAnnualReturn,
     bullDelta: 2.5,
     bearDelta: 3.0,
     inflation,
@@ -100,6 +118,7 @@ export function deriveLivePlan(persona: Persona, finances: UserFinances, inflati
     aggregateShortfall,
     onTrackCount,
     shortCount,
+    effectiveAnnualReturn,
     scaledInstruments,
   };
 }

@@ -120,9 +120,9 @@ export default function ScenariosPage() {
 
 function RowSet({ m }: { m: { id: string; name: string; status: string } }) {
   // simulate: ON_TRACK in bull, status in base, often SHORTFALL in bear
-  const bull = m.status === "ON_TRACK" || m.status === "SURPLUS" ? "✓" : "≈";
-  const base = m.status === "SHORTFALL" ? "✗" : m.status === "SURPLUS" ? "✓✓" : "✓";
-  const bear = m.status === "SHORTFALL" ? "✗✗" : m.status === "ON_TRACK" ? "≈" : "✓";
+  const bull = m.status === "ON_TRACK" || m.status === "SURPLUS" ? "PASS" : "MIX";
+  const base = m.status === "SHORTFALL" ? "RISK" : m.status === "SURPLUS" ? "STRONG" : "PASS";
+  const bear = m.status === "SHORTFALL" ? "HIGH" : m.status === "ON_TRACK" ? "MIX" : "PASS";
   const cell = (s: string, color: string) => (
     <div className="text-right">
       <span className="h-mono" style={{ color }}>{s}</span>

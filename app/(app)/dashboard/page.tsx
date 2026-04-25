@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
+import { Sparkles } from "lucide-react";
 import { useApp, type UserFinances } from "@/components/providers/AppProvider";
 import type { LivePlan } from "@/lib/livePlan";
 import { formatINR } from "@/lib/format";
@@ -43,7 +44,7 @@ export default function DashboardPage() {
       {/* Greeting */}
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Hello, {firstName}</h1>
-        <p className="text-sm text-[var(--color-ink-mid)] mt-1">
+        <p className="text-sm text-[var(--color-ink)] mt-1">
           {finances.customized
             ? "Your numbers, live plan, all synced."
             : "Tell us how money flows in and out each month — everything else updates from there."}
@@ -143,10 +144,10 @@ function FinancesHero({
     <section className="rounded-3xl bg-white border border-[var(--color-edge)] p-6 shadow-sm">
       <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
         <div>
-          <div className="text-base md:text-lg font-semibold tracking-tight">
+          <div className="text-lg md:text-xl font-semibold tracking-tight text-[var(--color-ink)]">
             Your money this month
           </div>
-          <div className="text-xs text-[var(--color-ink-dim)] mt-0.5">
+          <div className="text-xs text-[var(--color-ink)] mt-0.5">
             {customized
               ? "Your numbers — used everywhere in the app."
               : "Sample numbers from this profile. Edit to use yours."}
@@ -201,7 +202,7 @@ function FinancesHero({
 
       {!isDrawing && monthlyIncome > 0 && (
         <div className="mt-4">
-          <div className="flex items-center justify-between text-[11px] text-[var(--color-ink-dim)] mb-1.5">
+          <div className="flex items-center justify-between text-[11px] text-[var(--color-ink-mid)] mb-1.5">
             <span>Savings rate</span>
             <span style={{ color: healthColor }} className="font-medium">
               {savingsRate}% · {healthLabel}
@@ -216,7 +217,7 @@ function FinancesHero({
               }}
             />
           </div>
-          <div className="mt-1.5 flex items-center justify-between text-[10px] text-[var(--color-ink-faint)]">
+          <div className="mt-1.5 flex items-center justify-between text-[10px] text-[var(--color-ink-mid)]">
             <span>0%</span>
             <span>15% solid</span>
             <span>30%+ excellent</span>
@@ -268,7 +269,7 @@ function FinancesTile({
       <div className="text-3xl font-semibold tracking-tight tabular-nums" style={{ color: valueColor }}>
         ₹{compact(value)}
       </div>
-      <div className="text-[11px] text-[var(--color-ink-dim)] mt-1 leading-snug">{subtitle}</div>
+      <div className="text-[11px] text-[var(--color-ink-mid)] mt-1 leading-snug">{subtitle}</div>
     </div>
   );
 }
@@ -302,7 +303,11 @@ function FinancesEditor({
       <div className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-xl max-h-[92vh] overflow-auto">
         {isOnboarding && (
           <div className="mb-4 rounded-2xl bg-[var(--color-lavender-soft)] px-4 py-3 text-xs leading-relaxed text-[var(--color-ink)]">
-            👋 <strong>One-time setup.</strong> Plug in your monthly numbers and we'll wire them
+            <span className="inline-flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5" aria-hidden />
+              <strong>One-time setup.</strong>
+            </span>{" "}
+            Plug in your monthly numbers and we'll wire them
             into every screen — goal funding, projections, instrument splits. You can edit anytime
             from the dashboard or the sidebar's "My money".
           </div>
@@ -310,7 +315,7 @@ function FinancesEditor({
         <div className="text-lg font-semibold tracking-tight">
           {isOnboarding ? "Let's start with your monthly numbers" : "Edit your monthly numbers"}
         </div>
-        <div className="text-xs text-[var(--color-ink-dim)] mt-1 leading-relaxed">
+        <div className="text-xs text-[var(--color-ink-mid)] mt-1 leading-relaxed">
           We'll use these everywhere — projections, goal funding, allocation. Stays in your browser
           only; nothing leaves your device.
         </div>
@@ -379,7 +384,7 @@ function FinancesEditor({
             )}
 
             {income > 0 && effectiveSavings >= 0 && (
-              <div className="mt-3 text-[11px] text-[var(--color-ink-dim)]">
+              <div className="mt-3 text-[11px] text-[var(--color-ink-mid)]">
                 Savings rate:{" "}
                 <span
                   className="font-semibold"
@@ -452,7 +457,7 @@ function NumberField({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
+      <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-ink-mid)]">
         {label}
       </span>
       <div className="relative">
@@ -467,13 +472,13 @@ function NumberField({
           value={Number.isFinite(value) ? value : 0}
           onChange={(e) => onChange(Number(e.target.value))}
           placeholder={placeholder}
-          className={`w-full rounded-xl border ${
+          className={`w-full rounded-xl border placeholder:text-black placeholder:opacity-100 ${
             compactInput ? "" : "bg-white"
           } border-[var(--color-edge)] bg-white pl-7 pr-3 py-2.5 text-base tabular-nums focus:border-[var(--color-cyan)] focus:outline-none`}
         />
       </div>
       {help && (
-        <span className="text-[10px] text-[var(--color-ink-dim)] leading-relaxed">{help}</span>
+        <span className="text-[10px] text-[var(--color-ink-mid)] leading-relaxed">{help}</span>
       )}
     </label>
   );
@@ -510,7 +515,7 @@ function PlanSummary({
   } else {
     tone = "warn";
     const worst = [...shorts].sort((a, b) => b.shortfallLive - a.shortfallLive)[0];
-    headline = `${shorts.length} of ${livePlan.milestones.length} goals are short by ₹${compact(livePlan.aggregateShortfall)}.`;
+    headline = `${shorts.length} out of ${livePlan.milestones.length} goals short this month · ₹${compact(livePlan.aggregateShortfall)} gap.`;
     detail = `Biggest gap: ${worst.name} at age ${worst.age} is ₹${compact(worst.shortfallLive)} short. Try saving more, or push the goal later.`;
   }
 
@@ -533,11 +538,11 @@ function PlanSummary({
         {tone === "ok" ? <CheckIcon /> : <AlertIcon />}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-base md:text-lg font-semibold tracking-tight leading-snug">
+        <div className="text-[1rem] md:text-lg font-semibold tracking-tight leading-snug text-[var(--color-ink)]">
           {headline}
         </div>
-        <div className="text-sm text-[var(--color-ink-mid)] mt-1 leading-relaxed">{detail}</div>
-        <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] text-[var(--color-ink-dim)]">
+        <div className="text-sm text-[var(--color-ink)] mt-1 leading-relaxed">{detail}</div>
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] text-[var(--color-ink)]">
           <span>
             <span className="text-[var(--color-mint-dim)] font-semibold">●</span>{" "}
             {onTrack.length} on track
@@ -574,11 +579,11 @@ function NetWorthCard({
   return (
     <div className="h-card-lavender p-7">
       <div className="text-center">
-        <div className="text-sm text-[var(--color-ink-mid)]">Net worth</div>
+        <div className="text-sm text-[var(--color-ink)]">Net worth</div>
         <div className="mt-1 text-5xl font-semibold tracking-tight tabular-nums">
           ₹{compact(persona.netWorth)}
         </div>
-        <div className="mt-1 text-xs text-[var(--color-ink-mid)]">
+        <div className="mt-1 text-xs text-[var(--color-ink)]">
           {monthly >= 0
             ? `Adding ₹${compact(monthly)}/month`
             : `Drawing ₹${compact(Math.abs(monthly))}/month`}

@@ -47,6 +47,7 @@ export function CommandBar() {
   const commands: Command[] = useMemo(
     () => [
       { id: "nav-home", label: "Dashboard", hint: "Home", group: "Navigate", action: () => router.push("/dashboard") },
+      { id: "nav-investments", label: "My Investments", hint: "/investments", group: "Navigate", action: () => router.push("/investments") },
       { id: "nav-timeline", label: "Timeline & Milestones", hint: "/timeline", group: "Navigate", action: () => router.push("/timeline") },
       { id: "nav-allocation", label: "Allocation Intelligence", hint: "/allocation", group: "Navigate", action: () => router.push("/allocation") },
       { id: "nav-bl", label: "Black-Litterman Explainability", hint: "/black-litterman", group: "Navigate", action: () => router.push("/black-litterman") },

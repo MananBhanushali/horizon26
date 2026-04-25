@@ -116,7 +116,7 @@ export default function Index() {
         >
           {/* Main Card */}
           <div className="bg-white rounded-2xl shadow-2xl shadow-indigo-100/50 p-8 lg:p-10 border border-slate-100 relative z-10 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_25px_60px_-12px_rgba(46,16,101,0.15)]">
-            <div className="text-xs font-bold tracking-widest text-slate-500 uppercase mb-3">
+            <div className="text-xs font-bold tracking-widest text-slate-600 uppercase mb-3">
               Projected Net Worth
             </div>
             <div className="flex items-center gap-4 mb-16">
@@ -146,7 +146,7 @@ export default function Index() {
                   <div className="text-sm font-bold text-slate-900 text-center transition-colors duration-300 group-hover/node:text-[#2E1065]">
                     Apartment
                   </div>
-                  <div className="text-xs font-semibold text-slate-500">
+                  <div className="text-xs font-semibold text-slate-600">
                     2026
                   </div>
                 </div>
@@ -159,7 +159,7 @@ export default function Index() {
                   <div className="text-sm font-bold text-slate-900 text-center transition-colors duration-300 group-hover/node:text-[#2E1065]">
                     Wedding
                   </div>
-                  <div className="text-xs font-semibold text-slate-500">
+                  <div className="text-xs font-semibold text-slate-600">
                     2028
                   </div>
                 </div>
@@ -167,12 +167,12 @@ export default function Index() {
                 {/* Node 3 */}
                 <div className="flex flex-col items-center group/node cursor-pointer">
                   <div className="w-8 h-8 rounded-full bg-[#F8FAFC] border-[3px] border-slate-300 flex items-center justify-center z-10 mb-4 shadow-sm transition-all duration-300 group-hover/node:scale-125 group-hover/node:shadow-md group-hover/node:border-[#2E1065]">
-                    <Briefcase className="w-3.5 h-3.5 text-slate-400 transition-colors duration-300 group-hover/node:text-[#2E1065]" />
+                    <Briefcase className="w-3.5 h-3.5 text-slate-500 transition-colors duration-300 group-hover/node:text-[#2E1065]" />
                   </div>
-                  <div className="text-sm font-bold text-slate-400 text-center transition-colors duration-300 group-hover/node:text-[#2E1065]">
+                  <div className="text-sm font-bold text-slate-500 text-center transition-colors duration-300 group-hover/node:text-[#2E1065]">
                     Business
                   </div>
-                  <div className="text-xs font-semibold text-slate-400">
+                  <div className="text-xs font-semibold text-slate-500">
                     2032
                   </div>
                 </div>
@@ -190,37 +190,37 @@ export default function Index() {
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
             <Link
               href="#"
-              className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-all duration-300 hover:-translate-y-0.5"
+              className="text-sm font-medium text-slate-600 hover:text-slate-800 transition-all duration-300 hover:-translate-y-0.5"
             >
               Privacy
             </Link>
             <Link
               href="#"
-              className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-all duration-300 hover:-translate-y-0.5"
+              className="text-sm font-medium text-slate-600 hover:text-slate-800 transition-all duration-300 hover:-translate-y-0.5"
             >
               Terms
             </Link>
             <Link
               href="#"
-              className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-all duration-300 hover:-translate-y-0.5"
+              className="text-sm font-medium text-slate-600 hover:text-slate-800 transition-all duration-300 hover:-translate-y-0.5"
             >
               Security
             </Link>
             <Link
               href="#"
-              className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-all duration-300 hover:-translate-y-0.5"
+              className="text-sm font-medium text-slate-600 hover:text-slate-800 transition-all duration-300 hover:-translate-y-0.5"
             >
               Contact
             </Link>
             <Link
               href="#"
-              className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-all duration-300 hover:-translate-y-0.5"
+              className="text-sm font-medium text-slate-600 hover:text-slate-800 transition-all duration-300 hover:-translate-y-0.5"
             >
               Blog
             </Link>
           </div>
 
-          <div className="text-sm font-medium text-slate-500">
+          <div className="text-sm font-medium text-slate-600">
             © 2024 Project Horizon. Premium Digital Assets.
           </div>
         </div>

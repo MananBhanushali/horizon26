@@ -1,6 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import {
+  AlertCircle,
+  BedDouble,
+  Briefcase,
+  Car,
+  CheckCircle2,
+  Gem,
+  GraduationCap,
+  Heart,
+  HeartPulse,
+  House,
+  Plane,
+  Star,
+} from "lucide-react";
 import { useApp } from "@/components/providers/AppProvider";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/ui/Badges";
@@ -33,23 +47,23 @@ const CATEGORY_COLOR: Record<MilestoneCategory, string> = {
   child: "#f5c89a",
 };
 
-const CATEGORY_ICON: Record<MilestoneCategory, string> = {
-  education: "🎓",
-  home: "🏠",
-  wedding: "💍",
-  vehicle: "🚗",
-  business: "💼",
-  retirement: "🛏",
-  travel: "✈",
-  healthcare: "✚",
-  legacy: "★",
-  child: "♥",
+const CATEGORY_ICON: Record<MilestoneCategory, ReactNode> = {
+  education: <GraduationCap className="h-5 w-5" aria-hidden />,
+  home: <House className="h-5 w-5" aria-hidden />,
+  wedding: <Gem className="h-5 w-5" aria-hidden />,
+  vehicle: <Car className="h-5 w-5" aria-hidden />,
+  business: <Briefcase className="h-5 w-5" aria-hidden />,
+  retirement: <BedDouble className="h-5 w-5" aria-hidden />,
+  travel: <Plane className="h-5 w-5" aria-hidden />,
+  healthcare: <HeartPulse className="h-5 w-5" aria-hidden />,
+  legacy: <Star className="h-5 w-5" aria-hidden />,
+  child: <Heart className="h-5 w-5" aria-hidden />,
 };
 
 const compact = (n: number) => formatINR(n, { compact: true }).replace("Rs. ", "");
 
 export default function TimelinePage() {
-  const { persona, finances } = useApp();
+  const { persona, finances, livePlan } = useApp();
 
   // SWP mode = drawing down (negative monthly savings).
   const isDrawing = finances.monthlySavings < 0;
@@ -67,7 +81,7 @@ export default function TimelinePage() {
   // What-if knobs. monthlySIP defaults to user-entered savings (which itself defaults to persona).
   const [monthlySIP, setMonthlySIP] = useState<number>(finances.monthlySavings);
   const [inflation, setInflation] = useState<number>(5.5);
-  const [baseReturn, setBaseReturn] = useState<number>(persona.preTaxReturn);
+  const [baseReturn, setBaseReturn] = useState<number>(livePlan.effectiveAnnualReturn);
   const [zoom, setZoom] = useState<Zoom>("ALL");
 
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -89,10 +103,10 @@ export default function TimelinePage() {
       }))
     );
     setMonthlySIP(finances.monthlySavings);
-    setBaseReturn(persona.preTaxReturn);
+    setBaseReturn(livePlan.effectiveAnnualReturn);
     setActiveId(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [persona]);
+  }, [persona, livePlan.effectiveAnnualReturn]);
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -133,7 +147,7 @@ export default function TimelinePage() {
         endAge,
         startBalance: persona.netWorth,
         monthlySIP: finances.monthlySavings,
-        baseReturn: persona.preTaxReturn,
+        baseReturn: livePlan.effectiveAnnualReturn,
         bullDelta: 2.5,
         bearDelta: 3.0,
         inflation: 0.055,
@@ -143,7 +157,7 @@ export default function TimelinePage() {
           inflation: 0.055,
         })),
       }),
-    [startAge, endAge, persona, finances.monthlySavings]
+    [startAge, endAge, persona, finances.monthlySavings, livePlan.effectiveAnnualReturn]
   );
 
   const baselineFinal = baselineProjection[baselineProjection.length - 1]?.base ?? 0;
@@ -173,6 +187,14 @@ export default function TimelinePage() {
   ).length;
   const shortCount = decorated.filter((m) => m.status === "SHORTFALL").length;
   const finalCorpus = projection[projection.length - 1]?.base ?? 0;
+  const avgYearsToGoal =
+    decorated.length > 0
+      ? decorated.reduce((acc, m) => acc + Math.max(0, m.age - startAge), 0) / decorated.length
+      : 0;
+  const nextGoalYears =
+    decorated.length > 0
+      ? Math.max(0, Math.min(...decorated.map((m) => Math.max(0, m.age - startAge))))
+      : 0;
 
   // Find biggest gap for the gap-narrator
   const biggestGap = useMemo(
@@ -290,49 +312,28 @@ export default function TimelinePage() {
           hint={`${shortCount} goal${shortCount === 1 ? "" : "s"} short`}
         />
         <KPI
+          label="Avg years to goals"
+          value={`${avgYearsToGoal.toFixed(1)} yr`}
+          tone="info"
+          hint={`next goal in ${nextGoalYears.toFixed(1)} yr`}
+        />
+        <KPI
           label={isDrawing ? "Monthly draw" : "Monthly SIP"}
           value={`₹${compact(Math.abs(monthlySIP))}`}
           tone="info"
           hint={`@ ${baseReturn.toFixed(1)}% annual return`}
-        />
-        <KPI
-          label="Inflation"
-          value={`${inflation.toFixed(1)}%`}
-          tone="info"
-          hint="user-set assumption"
         />
       </section>
 
       {/* Chart + sliders */}
       <section className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
         <div className="h-panel p-5">
-          {/* Live end-corpus headline — animates as sliders move so changes are visible */}
-          <div className="flex items-end justify-between gap-3 flex-wrap mb-3">
-            <div>
-              <div className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
-                Likely corpus at age {endAge}
-              </div>
-              <div className="text-3xl font-semibold tracking-tight tabular-nums transition-colors">
-                ₹{compact(finalCorpus)}
-              </div>
-              {Math.abs(finalCorpus - baselineFinal) > 100 && (
-                <div
-                  className="text-xs font-medium mt-0.5"
-                  style={{
-                    color:
-                      finalCorpus >= baselineFinal
-                        ? "var(--color-mint-dim)"
-                        : "var(--color-warn-dim)",
-                  }}
-                >
-                  {finalCorpus >= baselineFinal ? "▲" : "▼"} ₹
-                  {compact(Math.abs(finalCorpus - baselineFinal))} vs your baseline
-                </div>
-              )}
+          <div className="mb-3">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-dim)]">
+              Live projection
             </div>
-            <div className="text-[11px] text-[var(--color-ink-dim)] flex items-center gap-2">
-              <span className="inline-block w-3 h-[1.5px] bg-[var(--color-ink-faint)] border-t border-dashed" />
-              dashed line = your baseline
+            <div className="text-[12px] text-[var(--color-ink-dim)]">
+              Changes update the curve in real time
             </div>
           </div>
           <InteractiveTimeline
@@ -345,6 +346,21 @@ export default function TimelinePage() {
             onMilestoneDrag={updateMilestoneAge}
             onMilestoneClick={(id) => setActiveId(id)}
           />
+          <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-2">
+            <GraphMetricTile label="Final corpus" value={`₹${compact(finalCorpus)}`} />
+            <GraphMetricTile
+              label="Vs base"
+              value={`${finalCorpus >= baselineFinal ? "+" : "−"}₹${compact(
+                Math.abs(finalCorpus - baselineFinal)
+              )}`}
+              tone={finalCorpus >= baselineFinal ? "ok" : "warn"}
+            />
+            <GraphMetricTile
+              label={isDrawing ? "Draw" : "SIP"}
+              value={`${monthlySIP < 0 ? "−" : ""}₹${compact(Math.abs(monthlySIP))}`}
+            />
+            <GraphMetricTile label="Return" value={`${baseReturn.toFixed(1)}%`} />
+          </div>
         </div>
 
         <WhatIfPanel
@@ -356,11 +372,12 @@ export default function TimelinePage() {
           baseReturn={baseReturn}
           setBaseReturn={setBaseReturn}
           baselineSIP={finances.monthlySavings}
-          baselineReturn={persona.preTaxReturn}
+          baselineReturn={livePlan.effectiveAnnualReturn}
+          effectiveReturn={livePlan.effectiveAnnualReturn}
           onReset={() => {
             setMonthlySIP(finances.monthlySavings);
             setInflation(5.5);
-            setBaseReturn(persona.preTaxReturn);
+            setBaseReturn(livePlan.effectiveAnnualReturn);
             setToast("Reset to baseline.");
           }}
         />
@@ -369,27 +386,36 @@ export default function TimelinePage() {
       {/* Milestone cards */}
       <section className="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-3">
         {decorated.map((m) => (
-          <button
+          <div
             key={m.id}
-            onClick={() => setActiveId(m.id)}
             className="text-left rounded-2xl bg-white border border-[var(--color-edge)] p-4 hover:shadow-md transition-shadow"
           >
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-3 min-w-0">
-                <span
-                  className="grid place-items-center h-10 w-10 rounded-full text-white text-base"
-                  style={{ background: CATEGORY_COLOR[m.category] }}
-                >
-                  {CATEGORY_ICON[m.category]}
-                </span>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">{m.name}</div>
-                  <div className="text-[11px] text-[var(--color-ink-dim)]">at age {m.age}</div>
+            <div className="flex items-start justify-between gap-2">
+              <button onClick={() => setActiveId(m.id)} className="min-w-0 flex-1 text-left">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span
+                    className="grid place-items-center h-10 w-10 rounded-full text-white text-base"
+                    style={{ background: CATEGORY_COLOR[m.category] }}
+                  >
+                    {CATEGORY_ICON[m.category]}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate">{m.name}</div>
+                    <div className="text-[11px] text-[var(--color-ink-dim)]">at age {m.age}</div>
+                  </div>
                 </div>
+              </button>
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                <StatusBadge status={m.status} size="sm" />
+                <button
+                  onClick={() => setConfirmDelete(m)}
+                  className="text-[11px] text-[var(--color-warn-dim)] hover:underline underline-offset-2"
+                >
+                  Remove
+                </button>
               </div>
-              <StatusBadge status={m.status} size="sm" />
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 text-[12px]">
+            <button onClick={() => setActiveId(m.id)} className="mt-3 grid grid-cols-2 gap-2 text-[12px] w-full text-left">
               <Cell label="Cost when due" value={`₹${compact(m.inflated)}`} />
               <Cell label="You'll have" value={`₹${compact(m.projected)}`} />
               <Cell label="Today's cost" value={`₹${compact(m.nominalCost)}`} />
@@ -402,8 +428,8 @@ export default function TimelinePage() {
                     : `₹${compact(m.projected - m.inflated)}`
                 }
               />
-            </div>
-          </button>
+            </button>
+          </div>
         ))}
       </section>
 
@@ -440,8 +466,9 @@ export default function TimelinePage() {
                   How much SIP do I need? →
                 </button>
               ) : (
-                <span className="text-xs text-[var(--color-mint-dim)] font-medium">
-                  ✓ Fully funded
+                <span className="text-xs text-[var(--color-mint-dim)] font-medium inline-flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                  Fully funded
                 </span>
               )}
             </div>
@@ -541,7 +568,7 @@ function InsightBanner({
           className="grid place-items-center h-9 w-9 rounded-xl text-white shrink-0"
           style={{ background: "var(--color-mint-dim)" }}
         >
-          ✓
+          <CheckCircle2 className="h-5 w-5" aria-hidden />
         </div>
         <div className="text-sm flex-1 min-w-0">
           <span className="font-semibold">All {totalGoals} goals look fundable.</span>{" "}
@@ -566,7 +593,7 @@ function InsightBanner({
         className="grid place-items-center h-9 w-9 rounded-xl text-white shrink-0"
         style={{ background: "var(--color-warn-dim)" }}
       >
-        !
+        <AlertCircle className="h-5 w-5" aria-hidden />
       </div>
       <div className="text-sm flex-1 min-w-0">
         <span className="font-semibold">
@@ -675,9 +702,7 @@ function InteractiveTimeline({
     PAD.t + chartH - ((v - minV) / (maxV - minV || 1)) * chartH;
 
   const linePath = (key: "base" | "bull" | "bear", points = filtered) =>
-    points
-      .map((p, i) => `${i === 0 ? "M" : "L"} ${x(p.age).toFixed(1)} ${y(p[key]).toFixed(1)}`)
-      .join(" ");
+    smoothLinePath(points.map((p) => [x(p.age), y(p[key])] as const));
 
   const bandPath = () => {
     const top = filtered
@@ -775,17 +800,23 @@ function InteractiveTimeline({
         role="img"
         aria-label="Life projection timeline. Drag goal markers to reposition."
       >
+        <defs>
+          <linearGradient id="timelineBandFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-lavender)" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="var(--color-lavender)" stopOpacity="0.08" />
+          </linearGradient>
+        </defs>
         {/* Grid */}
         <g aria-hidden>
           {yTicks.map((t) => (
-            <line key={`y${t}`} x1={PAD.l} x2={SVG_W - PAD.r} y1={y(t)} y2={y(t)} stroke="var(--color-edge)" strokeDasharray="2 4" opacity={0.7} />
+            <line key={`y${t}`} x1={PAD.l} x2={SVG_W - PAD.r} y1={y(t)} y2={y(t)} stroke="var(--color-edge)" strokeDasharray="2 6" opacity={0.7} />
           ))}
           {xTicks.map((t) => (
-            <line key={`x${t}`} x1={x(t)} x2={x(t)} y1={PAD.t} y2={SVG_H - PAD.b} stroke="var(--color-edge)" strokeDasharray="2 4" opacity={0.5} />
+            <line key={`x${t}`} x1={x(t)} x2={x(t)} y1={PAD.t} y2={SVG_H - PAD.b} stroke="var(--color-edge)" strokeDasharray="2 6" opacity={0.45} />
           ))}
         </g>
 
-        <path d={bandPath()} fill="var(--color-lavender)" opacity={0.35} />
+        <path d={bandPath()} fill="url(#timelineBandFill)" />
 
         {/* BASELINE (dashed reference) — drawn first, behind the live curves */}
         <path
@@ -793,14 +824,14 @@ function InteractiveTimeline({
           fill="none"
           stroke="var(--color-ink-faint)"
           strokeWidth={1.5}
-          strokeDasharray="5 4"
-          opacity={0.85}
+          strokeDasharray="4 5"
+          opacity={0.55}
         />
 
         {/* LIVE projection curves */}
-        <path d={linePath("bull")} fill="none" stroke="var(--color-mint-dim)" strokeWidth={1.4} opacity={0.7} />
-        <path d={linePath("bear")} fill="none" stroke="var(--color-warn-dim)" strokeWidth={1.4} opacity={0.7} />
-        <path d={linePath("base")} fill="none" stroke="var(--color-pill-dark)" strokeWidth={2.5} />
+        <path d={linePath("bull")} fill="none" stroke="var(--color-mint-dim)" strokeWidth={1.7} opacity={0.65} />
+        <path d={linePath("bear")} fill="none" stroke="var(--color-warn-dim)" strokeWidth={1.5} opacity={0.45} />
+        <path d={linePath("base")} fill="none" stroke="var(--color-cyan)" strokeWidth={2.2} />
 
         {yTicks.map((t) => (
           <text key={`yl${t}`} x={PAD.l - 8} y={y(t) + 3} textAnchor="end" fontSize={10} fill="var(--color-ink-dim)">
@@ -844,8 +875,8 @@ function InteractiveTimeline({
               }}
             >
               <line x1={0} x2={0} y1={PAD.t - cy} y2={SVG_H - PAD.b - cy} stroke={color} strokeWidth={1} opacity={0.4} strokeDasharray="3 3" />
-              <circle r={13} fill="white" stroke={color} strokeWidth={2.5} />
-              <circle r={6} fill={color} />
+              <circle r={11} fill="white" stroke={color} strokeWidth={2} />
+              <circle r={4.25} fill={color} />
               <title>
                 {m.name} · age {m.age} · drag to reposition
               </title>
@@ -868,29 +899,19 @@ function InteractiveTimeline({
 
       {hoverPt && !dragId && (
         <div
-          className="pointer-events-none absolute rounded-xl bg-white border border-[var(--color-edge)] shadow-md px-3 py-2 text-[11px] leading-tight"
+          className="pointer-events-none absolute rounded-2xl bg-white/95 border border-[var(--color-edge)] shadow-lg px-3 py-2 text-[11px] leading-tight"
           style={{ left: `${(x(hoverPt.age) / SVG_W) * 100}%`, top: 6, transform: "translateX(-50%)" }}
         >
           <div className="text-[var(--color-ink-dim)]">
             Age <span className="text-[var(--color-ink)] font-semibold">{hoverPt.age.toFixed(0)}</span>
           </div>
           <div className="text-[var(--color-mint-dim)]">Best ₹{compact(hoverPt.bull)}</div>
-          <div className="text-[var(--color-ink)] font-medium">Likely ₹{compact(hoverPt.base)}</div>
+          <div className="text-[var(--color-cyan)] font-semibold">Likely ₹{compact(hoverPt.base)}</div>
           <div className="text-[var(--color-warn-dim)]">Worst ₹{compact(hoverPt.bear)}</div>
         </div>
       )}
-
-      <div className="mt-2 flex items-center gap-4 text-[11px] text-[var(--color-ink-dim)] flex-wrap">
-        <span className="flex items-center gap-1.5">
-          <span className="h-2 w-4 rounded-full bg-[var(--color-mint-dim)]" /> Best case
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="h-2 w-4 rounded-full bg-[var(--color-pill-dark)]" /> Likely
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="h-2 w-4 rounded-full bg-[var(--color-warn-dim)]" /> Worst case
-        </span>
-        <span className="ml-auto italic flex items-center gap-1">
+      <div className="mt-2 flex items-center justify-end text-[11px] text-[var(--color-ink-dim)]">
+        <span className="italic flex items-center gap-1">
           <DragIcon /> Drag a marker to change when a goal happens
         </span>
       </div>
@@ -919,6 +940,7 @@ function WhatIfPanel({
   setBaseReturn,
   baselineSIP,
   baselineReturn,
+  effectiveReturn,
   onReset,
 }: {
   isDrawing: boolean;
@@ -930,6 +952,7 @@ function WhatIfPanel({
   setBaseReturn: (n: number) => void;
   baselineSIP: number;
   baselineReturn: number;
+  effectiveReturn: number;
   onReset: () => void;
 }) {
   return (
@@ -978,7 +1001,7 @@ function WhatIfPanel({
         />
         <Slider
           label="Annual return (before tax)"
-          help="Average yearly growth your portfolio earns before taxes."
+          help="Average yearly growth your portfolio earns before taxes. Baseline comes from My investments."
           value={baseReturn}
           min={3}
           max={18}
@@ -990,6 +1013,10 @@ function WhatIfPanel({
       </div>
 
       <div className="mt-5 rounded-2xl bg-[var(--color-grid)] p-3 text-[11px] text-[var(--color-ink-mid)] leading-relaxed">
+        <div className="mb-2">
+          Investment-tracked baseline return:{" "}
+          <strong className="text-[var(--color-ink)]">{effectiveReturn.toFixed(2)}%</strong>
+        </div>
         <strong className="text-[var(--color-ink)]">How the math works:</strong> every goal deducts
         its cost (after inflation) from your corpus the moment it hits. The remaining money keeps
         compounding into the next goal — so a big purchase early shrinks everything that comes
@@ -1089,6 +1116,34 @@ function KPI({ label, value, tone, hint }: { label: string; value: string; tone?
         {value}
       </div>
       {hint && <div className="text-[11px] text-[var(--color-ink-dim)] mt-0.5">{hint}</div>}
+    </div>
+  );
+}
+
+function GraphMetricTile({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone?: "ok" | "warn";
+}) {
+  const fg =
+    tone === "warn"
+      ? "var(--color-warn-dim)"
+      : tone === "ok"
+      ? "var(--color-mint-dim)"
+      : "var(--color-ink)";
+
+  return (
+    <div className="rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2.5">
+      <div className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
+        {label}
+      </div>
+      <div className="mt-1 text-xl font-semibold tabular-nums" style={{ color: fg }}>
+        {value}
+      </div>
     </div>
   );
 }
@@ -1202,7 +1257,7 @@ function AddMilestoneDialog({
             >
               {(Object.keys(CATEGORY_ICON) as MilestoneCategory[]).map((c) => (
                 <option key={c} value={c}>
-                  {CATEGORY_ICON[c]} {capitalize(c)}
+                  {capitalize(c)}
                 </option>
               ))}
             </select>
@@ -1391,4 +1446,27 @@ function niceStep(raw: number): number {
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function smoothLinePath(points: ReadonlyArray<readonly [number, number]>): string {
+  if (points.length === 0) return "";
+  if (points.length === 1) {
+    const [x0, y0] = points[0];
+    return `M ${x0.toFixed(1)} ${y0.toFixed(1)}`;
+  }
+
+  const d: string[] = [];
+  const [x0, y0] = points[0];
+  d.push(`M ${x0.toFixed(1)} ${y0.toFixed(1)}`);
+  for (let i = 1; i < points.length; i++) {
+    const [xPrev, yPrev] = points[i - 1];
+    const [xCurr, yCurr] = points[i];
+    const ctrlX = (xPrev + xCurr) / 2;
+    d.push(
+      `C ${ctrlX.toFixed(1)} ${yPrev.toFixed(1)}, ${ctrlX.toFixed(1)} ${yCurr.toFixed(
+        1
+      )}, ${xCurr.toFixed(1)} ${yCurr.toFixed(1)}`
+    );
+  }
+  return d.join(" ");
 }

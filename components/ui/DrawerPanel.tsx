@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
+import { X } from "lucide-react";
 
 export function DrawerPanel({
   open,
@@ -58,7 +59,7 @@ export function DrawerPanel({
             className="grid place-items-center h-8 w-8 rounded-full bg-[var(--color-grid)] text-[var(--color-ink-mid)] hover:text-[var(--color-ink)]"
             aria-label="Close drawer"
           >
-            ✕
+            <X className="h-4 w-4" aria-hidden />
           </button>
         </header>
         <div className="overflow-y-auto px-6 py-3 h-[calc(100%-140px)]">{children}</div>

@@ -10,6 +10,7 @@ import type { Persona } from "@/lib/types";
 const SESSION_KEY = "v1.horizon26.session";
 const SETTINGS_KEY = "v1.horizon26.settings";
 const FINANCES_KEY = "v1.horizon26.finances"; // suffix: .{username}.{personaId}
+const INVESTMENTS_KEY = "v1.horizon26.investments"; // suffix: .{username}.{personaId}
 const ONBOARDED_KEY = "v1.horizon26.onboarded"; // suffix: .{username}
 
 type Session = { username: string; personaId: Persona["id"]; remember: boolean } | null;
@@ -30,6 +31,15 @@ export type UserFinances = {
   customized: boolean;
 };
 
+export type UserInvestment = {
+  id: string;
+  name: string;
+  category: "Equity" | "Debt" | "Gold" | "Liquid";
+  monthly: number;
+  currentValue: number;
+  annualReturn: number;
+};
+
 function defaultFinancesFor(persona: Persona): UserFinances {
   const monthlyIncome = Math.round(persona.annualIncome / 12);
   const savings = persona.monthlyContribution;
@@ -43,8 +53,41 @@ function defaultFinancesFor(persona: Persona): UserFinances {
   };
 }
 
+function defaultInvestmentsFor(persona: Persona): UserInvestment[] {
+  const totalsByCategory = persona.instruments.reduce<Record<UserInvestment["category"], number>>(
+    (acc, inst) => {
+      acc[inst.category] += inst.monthly;
+      return acc;
+    },
+    { Equity: 0, Debt: 0, Gold: 0, Liquid: 0 }
+  );
+  const categoryCorpus = {
+    Equity: persona.netWorth * (persona.allocation.equity / 100),
+    Debt: persona.netWorth * (persona.allocation.debt / 100),
+    Gold: persona.netWorth * (persona.allocation.gold / 100),
+    Liquid: persona.netWorth * (persona.allocation.liquid / 100),
+  } as const;
+
+  return persona.instruments.map((inst) => {
+    const catTotal = totalsByCategory[inst.category];
+    const weight = catTotal > 0 ? inst.monthly / catTotal : 0;
+    return {
+      id: inst.id,
+      name: inst.name,
+      category: inst.category,
+      monthly: inst.monthly,
+      currentValue: Math.round(categoryCorpus[inst.category] * weight),
+      annualReturn: persona.preTaxReturn,
+    };
+  });
+}
+
 function financesKeyFor(username: string | undefined, personaId: string): string {
   return `${FINANCES_KEY}.${username ?? "anon"}.${personaId}`;
+}
+
+function investmentsKeyFor(username: string | undefined, personaId: string): string {
+  return `${INVESTMENTS_KEY}.${username ?? "anon"}.${personaId}`;
 }
 
 type AppCtx = {
@@ -61,6 +104,9 @@ type AppCtx = {
   finances: UserFinances;
   updateFinances: (patch: Partial<UserFinances>) => void;
   resetFinances: () => void;
+  investments: UserInvestment[];
+  updateInvestments: (next: UserInvestment[]) => void;
+  resetInvestments: () => void;
   /** Derived plan: projection + per-goal funding + scaled instruments, all from `finances`. */
   livePlan: LivePlan;
   /** True until the user has acknowledged the one-time finances prompt (saved or skipped). */
@@ -78,6 +124,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [hydrated, setHydrated] = useState(false);
   const [financesByKey, setFinancesByKey] = useState<Record<string, UserFinances>>({});
+  const [investmentsByKey, setInvestmentsByKey] = useState<Record<string, UserInvestment[]>>({});
   const [onboardedUsers, setOnboardedUsers] = useState<Record<string, boolean>>({});
 
   const persistSession = useCallback((next: NonNullable<Session>) => {
@@ -107,6 +154,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       // Hydrate all finance entries + onboarded flags
       const finMap: Record<string, UserFinances> = {};
+      const invMap: Record<string, UserInvestment[]> = {};
       const onboardedMap: Record<string, boolean> = {};
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
@@ -115,11 +163,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
           try {
             finMap[k] = JSON.parse(localStorage.getItem(k) ?? "");
           } catch {}
+        } else if (k.startsWith(INVESTMENTS_KEY + ".")) {
+          try {
+            invMap[k] = JSON.parse(localStorage.getItem(k) ?? "");
+          } catch {}
         } else if (k.startsWith(ONBOARDED_KEY + ".")) {
           onboardedMap[k] = localStorage.getItem(k) === "1";
         }
       }
       setFinancesByKey(finMap);
+      setInvestmentsByKey(invMap);
       setOnboardedUsers(onboardedMap);
     } catch {
       // ignore
@@ -187,9 +240,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Resolve current finances: persisted-for-this-(user,persona) ?? defaults
   const finKey = financesKeyFor(session?.username, persona.id);
+  const invKey = investmentsKeyFor(session?.username, persona.id);
   const finances = useMemo<UserFinances>(() => {
     return financesByKey[finKey] ?? defaultFinancesFor(persona);
   }, [financesByKey, finKey, persona]);
+  const investments = useMemo<UserInvestment[]>(() => {
+    return investmentsByKey[invKey] ?? defaultInvestmentsFor(persona);
+  }, [investmentsByKey, invKey, persona]);
 
   const updateFinances = useCallback(
     (patch: Partial<UserFinances>) => {
@@ -223,6 +280,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, [finKey]);
 
+  const updateInvestments = useCallback(
+    (next: UserInvestment[]) => {
+      setInvestmentsByKey((map) => {
+        try {
+          localStorage.setItem(invKey, JSON.stringify(next));
+        } catch {}
+        return { ...map, [invKey]: next };
+      });
+    },
+    [invKey]
+  );
+
+  const resetInvestments = useCallback(() => {
+    setInvestmentsByKey((map) => {
+      const next = { ...map };
+      delete next[invKey];
+      try {
+        localStorage.removeItem(invKey);
+      } catch {}
+      return next;
+    });
+  }, [invKey]);
+
   // One-time onboarding: keyed by username so each demo profile only asks once.
   const onboardKey = `${ONBOARDED_KEY}.${session?.username ?? "anon"}`;
   const needsFinancesOnboarding =
@@ -236,7 +316,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [onboardKey]);
 
   // Derived live plan from the user's actual numbers
-  const livePlan = useMemo(() => deriveLivePlan(persona, finances), [persona, finances]);
+  const livePlan = useMemo(
+    () => deriveLivePlan(persona, finances, investments),
+    [persona, finances, investments]
+  );
 
   const value: AppCtx = {
     session,
@@ -252,6 +335,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     finances,
     updateFinances,
     resetFinances,
+    investments,
+    updateInvestments,
+    resetInvestments,
     livePlan,
     needsFinancesOnboarding,
     markFinancesOnboarded,

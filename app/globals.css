@@ -14,9 +14,9 @@
 
   /* Text — darkened for readability (no light greys) */
   --color-ink: #0d0d12;
-  --color-ink-mid: #2e2e3a;
-  --color-ink-dim: #4f4f5e;
-  --color-ink-faint: #6b6b7a;
+  --color-ink-mid: #0d0d12;
+  --color-ink-dim: #24242f;
+  --color-ink-faint: #31313d;
 
   /* Accent: lavender (replaces cyan in legacy var name) */
   --color-cyan: #6b6bf5;
@@ -62,6 +62,18 @@ body {
   font-feature-settings: "ss01", "cv01", "cv02";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #000000;
+  opacity: 1;
+}
+
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #000000;
+  opacity: 1;
 }
 
 body {

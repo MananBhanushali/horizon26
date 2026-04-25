@@ -33,12 +33,12 @@ export function TerminalPanel({
         <header className="flex items-center justify-between gap-3 px-5 pt-5 pb-2">
           <div className="min-w-0">
             {title && (
-              <div className="text-base font-semibold tracking-tight truncate">
+              <div className="text-[1rem] font-semibold tracking-tight text-[var(--color-ink)]">
                 {title}
               </div>
             )}
             {subtitle && (
-              <div className="text-xs text-[var(--color-ink-dim)] mt-0.5 truncate">
+              <div className="text-xs text-[var(--color-ink)] mt-0.5">
                 {subtitle}
               </div>
             )}

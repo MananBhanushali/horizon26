@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const PRIMARY: { label: string; href: string; icon: React.ReactNode }[] = [
   { label: "Dashboard", href: "/dashboard", icon: <HomeIcon /> },
   { label: "My money", href: "/dashboard?edit=money", icon: <WalletIcon /> },
+  { label: "My investments", href: "/investments", icon: <TrendIcon /> },
   { label: "Timeline", href: "/timeline", icon: <TimelineIcon /> },
   { label: "Allocation", href: "/allocation", icon: <DonutIcon /> },
   { label: "What-if", href: "/sandbox", icon: <RefreshIcon /> },
@@ -91,6 +92,7 @@ function Icon({ children }: { children: React.ReactNode }) {
 
 function HomeIcon() { return (<Icon><path d="M3 11.5 12 4l9 7.5" /><path d="M5 10v9h14v-9" /><path d="M10 19v-5h4v5" /></Icon>); }
 function WalletIcon() { return (<Icon><rect x="3" y="6" width="18" height="13" rx="3" /><path d="M3 10h18" /><circle cx="16.5" cy="14.5" r="1.2" /></Icon>); }
+function TrendIcon() { return (<Icon><path d="M4 17h16" /><path d="m5 14 4-4 3 3 6-6" /><path d="M15 7h3v3" /></Icon>); }
 function TimelineIcon() { return (<Icon><path d="M3 12h18" /><circle cx="7" cy="12" r="2" /><circle cx="13" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></Icon>); }
 function DonutIcon() { return (<Icon><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3" /><path d="M12 4v8l6 4" /></Icon>); }
 function RefreshIcon() { return (<Icon><path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M21 4v4h-4" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" /><path d="M3 20v-4h4" /></Icon>); }

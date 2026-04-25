@@ -29,7 +29,7 @@ export default function AllocationPage() {
       />
 
       <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_1fr] gap-4">
-        <TerminalPanel title="CURRENT ALLOCATION" subtitle={`Monthly basis: ${formatINR(monthlySIP, { compact: true })}`} active>
+        <TerminalPanel title="Current allocation" subtitle={`Monthly basis: ${formatINR(monthlySIP, { compact: true })}`} active>
           <div className="grid grid-cols-1 sm:grid-cols-[260px_1fr] items-center gap-5">
             <div className="grid place-items-center">
               <AllocationDonut
@@ -44,7 +44,7 @@ export default function AllocationPage() {
               <AllocationLegend allocation={persona.allocation} monthly={monthlySIP} />
               <div className="rounded border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2.5">
                 <div className="h-tick mb-1">WHY THIS MIX</div>
-                <p className="text-[12.5px] leading-snug text-[var(--color-ink-mid)]">
+                <p className="text-[12.5px] leading-snug text-[var(--color-ink)]">
                   {persona.reasoningTrace}
                 </p>
               </div>
@@ -54,7 +54,7 @@ export default function AllocationPage() {
 
         <TerminalPanel title="GLIDE PATH" subtitle="how allocation shifts as goals approach">
           <GlidePathChart data={persona.glidePath} height={220} />
-          <div className="mt-3 flex flex-wrap gap-3 text-[11px] h-mono text-[var(--color-ink-dim)]">
+          <div className="mt-3 flex flex-wrap gap-3 text-[11px] h-mono text-[var(--color-ink)]">
             {buckets.map((b) => (
               <span key={b.key} className="flex items-center gap-1.5">
                 <span className="h-2 w-3 rounded-sm" style={{ background: allocationPalette[b.key] }} />
@@ -90,8 +90,8 @@ export default function AllocationPage() {
                     </div>
                     <div className="h-mono text-sm">
                       {formatPercent(pct, 0)}{" "}
-                      <span className="text-[var(--color-ink-dim)] text-[11px]">·</span>{" "}
-                      <span className="text-[var(--color-ink-mid)] text-[12px]">{formatINR(monthly, { compact: true })}/mo</span>
+                      <span className="text-[var(--color-ink)] text-[11px]">·</span>{" "}
+                      <span className="text-[var(--color-ink)] text-[12px]">{formatINR(monthly, { compact: true })}/mo</span>
                     </div>
                   </div>
                   <div className="mt-2 h-1.5 rounded bg-[var(--color-base)] overflow-hidden">
@@ -108,7 +108,7 @@ export default function AllocationPage() {
             <div className="h-mono text-3xl">{persona.confidenceLevel}%</div>
             <ConfidenceBadge level={persona.confidenceLevel} label={persona.confidenceLabel} />
           </div>
-          <p className="mt-2 text-[12.5px] text-[var(--color-ink-mid)] leading-snug">
+          <p className="mt-2 text-[12.5px] text-[var(--color-ink)] leading-snug">
             Composite of BL posterior tightness, macro forecast uncertainty, and time-horizon sensitivity.
           </p>
           <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
