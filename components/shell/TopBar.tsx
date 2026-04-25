@@ -5,6 +5,7 @@ import { useApp } from "@/components/providers/AppProvider";
 import { demoUsers } from "@/data/users";
 import { personaById } from "@/data/personas";
 import { useRouter } from "next/navigation";
+import { LogoHorizontal } from "@/components/ui/Logo";
 
 const PROFILE_COLORS: Record<string, string> = {
   riya: "#a8d5ba",
@@ -34,17 +35,8 @@ export function TopBar() {
     <header className="sticky top-0 z-30 bg-[var(--color-base)]/85 backdrop-blur-md">
       <div className="flex flex-wrap items-center gap-3 px-5 py-3 lg:flex-nowrap">
         {/* Brand */}
-        <div className="flex items-center gap-2.5 shrink-0 w-[200px]">
-          <div
-            className="grid place-items-center h-9 w-9 rounded-xl bg-[var(--color-pill-dark)] text-white font-bold"
-            aria-hidden
-          >
-            H
-          </div>
-          <div className="leading-tight">
-            <div className="text-sm font-semibold tracking-tight">Horizon</div>
-            <div className="text-[10px] text-[var(--color-ink-dim)]">Plan · See · Decide</div>
-          </div>
+        <div className="flex items-center shrink-0 w-[200px]">
+          <LogoHorizontal className="-ml-1" />
         </div>
 
         <div className="ml-auto flex items-center gap-2.5">

@@ -26,16 +26,16 @@ interface TextPressureProps {
 
 const TextPressure: React.FC<TextPressureProps> = ({
   text = "Hello!",
-  fontFamily = "Compressa VF",
-  fontUrl = "https://res.cloudinary.com/dr6lvwubh/raw/upload/v1529908256/CompressaPRO-GX.woff2",
+  fontFamily = "var(--font-sans)",
+  fontUrl = "",
   width = true,
   weight = true,
   italic = true,
   alpha = false,
   flex = true,
   stroke = false,
-  strokeColor = "#ff0000",
-  textColor = "#ffffff",
+  strokeColor = "var(--color-cyan)",
+  textColor = "var(--color-ink)",
   minFontSize = 24,
   className = "",
 }) => {

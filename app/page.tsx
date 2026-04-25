@@ -11,6 +11,7 @@ import {
 import TextPressure from "@/components/ui/TextPressure";
 import StaggeredMenu from "@/components/ui/StaggeredMenu";
 import Silk from "@/components/ui/Silk";
+import { LogoHorizontal } from "@/components/ui/Logo";
 import { useState } from "react";
 
 export default function Index() {
@@ -57,8 +58,8 @@ export default function Index() {
 
       {/* Logo Placeholder */}
       <div className="max-w-7xl mx-auto w-full px-6 py-6 flex items-center justify-between pointer-events-none">
-        <div className="text-xl font-bold text-[#1E1B4B] tracking-tight pointer-events-auto">
-          Project Horizon
+        <div className="pointer-events-auto">
+          <LogoHorizontal className="scale-125 origin-left" />
         </div>
       </div>
 
@@ -185,7 +186,7 @@ export default function Index() {
       {/* Footer */}
       <footer className="w-full border-t border-slate-200/60 bg-slate-50/50">
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="font-bold text-[#1E1B4B]">Project Horizon</div>
+          <LogoHorizontal className="grayscale opacity-50" />
 
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
             <Link
