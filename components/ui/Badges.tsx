@@ -1,9 +1,9 @@
 import type { ConfidenceLabel, MilestoneStatus } from "@/lib/types";
 
 const sizeMap = {
-  sm: "text-[10px] px-1.5 py-0.5",
-  md: "text-[11px] px-2 py-1",
-  lg: "text-xs px-2.5 py-1",
+  sm: "text-[10px] px-2 py-0.5",
+  md: "text-[11px] px-2.5 py-1",
+  lg: "text-xs px-3 py-1",
 };
 
 export function StatusBadge({
@@ -13,34 +13,39 @@ export function StatusBadge({
   status: MilestoneStatus | "MARGINAL";
   size?: keyof typeof sizeMap;
 }) {
-  const variants: Record<typeof status, { label: string; cls: string; dot: string }> = {
+  const variants: Record<typeof status, { label: string; bg: string; fg: string; dot: string }> = {
     ON_TRACK: {
-      label: "ON TRACK",
-      cls: "bg-[var(--color-mint-soft)] text-[var(--color-mint)] border-[var(--color-mint-dim)]/40",
-      dot: "bg-[var(--color-mint)]",
+      label: "On track",
+      bg: "var(--color-mint-soft)",
+      fg: "var(--color-mint-dim)",
+      dot: "var(--color-mint-dim)",
     },
     SHORTFALL: {
-      label: "SHORTFALL",
-      cls: "bg-[var(--color-warn-soft)] text-[var(--color-warn)] border-[var(--color-warn-dim)]/40",
-      dot: "bg-[var(--color-warn)]",
+      label: "Shortfall",
+      bg: "var(--color-warn-soft)",
+      fg: "var(--color-warn-dim)",
+      dot: "var(--color-warn-dim)",
     },
     SURPLUS: {
-      label: "SURPLUS",
-      cls: "bg-[var(--color-cyan-soft)] text-[var(--color-cyan)] border-[var(--color-cyan-dim)]/40",
-      dot: "bg-[var(--color-cyan)]",
+      label: "Surplus",
+      bg: "var(--color-lavender-soft)",
+      fg: "var(--color-cyan-dim)",
+      dot: "var(--color-cyan-dim)",
     },
     MARGINAL: {
-      label: "MARGINAL",
-      cls: "bg-[var(--color-amber-soft)] text-[var(--color-amber)] border-[var(--color-amber-dim)]/40",
-      dot: "bg-[var(--color-amber)]",
+      label: "Marginal",
+      bg: "var(--color-amber-soft)",
+      fg: "var(--color-amber-dim)",
+      dot: "var(--color-amber-dim)",
     },
   };
   const v = variants[status];
   return (
     <span
-      className={`h-mono inline-flex items-center gap-1.5 rounded border ${v.cls} ${sizeMap[size]} font-medium tracking-wider`}
+      className={`inline-flex items-center gap-1.5 rounded-full ${sizeMap[size]} font-medium`}
+      style={{ background: v.bg, color: v.fg }}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${v.dot}`} aria-hidden />
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: v.dot }} aria-hidden />
       {v.label}
     </span>
   );
@@ -57,16 +62,16 @@ export function ConfidenceBadge({
 }) {
   const tone =
     label === "High"
-      ? "text-[var(--color-mint)] border-[var(--color-mint-dim)]/40 bg-[var(--color-mint-soft)]"
+      ? { bg: "var(--color-mint-soft)", fg: "var(--color-mint-dim)" }
       : label === "Medium"
-      ? "text-[var(--color-amber)] border-[var(--color-amber-dim)]/40 bg-[var(--color-amber-soft)]"
-      : "text-[var(--color-warn)] border-[var(--color-warn-dim)]/40 bg-[var(--color-warn-soft)]";
+      ? { bg: "var(--color-amber-soft)", fg: "var(--color-amber-dim)" }
+      : { bg: "var(--color-warn-soft)", fg: "var(--color-warn-dim)" };
   return (
-    <span className={`h-mono inline-flex items-center gap-1.5 rounded border ${tone} ${sizeMap[size]} font-medium`}>
-      <span className="opacity-70">CONF</span>
-      <span>{level}%</span>
-      <span className="opacity-60">·</span>
-      <span className="uppercase tracking-wider">{label}</span>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full ${sizeMap[size]} font-medium`}
+      style={{ background: tone.bg, color: tone.fg }}
+    >
+      {level}% · {label}
     </span>
   );
 }
@@ -81,20 +86,22 @@ export function ScenarioTag({
   onClick?: () => void;
 }) {
   const map = {
-    bull: { label: "BULL", cls: "text-[var(--color-mint)]" },
-    base: { label: "BASE", cls: "text-[var(--color-cyan)]" },
-    bear: { label: "BEAR", cls: "text-[var(--color-warn)]" },
+    bull: { label: "Bull", color: "var(--color-mint-dim)" },
+    base: { label: "Base", color: "var(--color-cyan-dim)" },
+    bear: { label: "Bear", color: "var(--color-warn-dim)" },
   } as const;
   const v = map[scenario];
   const Cmp = onClick ? "button" : "span";
   return (
     <Cmp
       onClick={onClick}
-      className={`h-mono rounded border px-2 py-1 text-[10px] tracking-[0.18em] transition-colors ${v.cls} ${
-        active
-          ? "bg-[var(--color-edge-strong)]/60 border-current"
-          : "border-[var(--color-edge)] hover:border-[var(--color-edge-strong)]"
+      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+        active ? "text-white" : ""
       }`}
+      style={{
+        background: active ? v.color : "var(--color-grid)",
+        color: active ? "#fff" : v.color,
+      }}
     >
       {v.label}
     </Cmp>
@@ -103,7 +110,7 @@ export function ScenarioTag({
 
 export function RiskTag({ band }: { band: string }) {
   return (
-    <span className="h-mono rounded border border-[var(--color-edge)] bg-[var(--color-panel)] px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-[var(--color-ink-mid)]">
+    <span className="inline-flex items-center rounded-full bg-[var(--color-grid)] px-2.5 py-0.5 text-[10px] font-medium text-[var(--color-ink-mid)]">
       {band}
     </span>
   );

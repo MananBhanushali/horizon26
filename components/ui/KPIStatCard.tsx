@@ -4,10 +4,10 @@ type Tone = "neutral" | "positive" | "negative" | "info" | "warning";
 
 const toneCls: Record<Tone, string> = {
   neutral: "text-[var(--color-ink)]",
-  positive: "text-[var(--color-mint)]",
-  negative: "text-[var(--color-warn)]",
-  info: "text-[var(--color-cyan)]",
-  warning: "text-[var(--color-amber)]",
+  positive: "text-[var(--color-mint-dim)]",
+  negative: "text-[var(--color-warn-dim)]",
+  info: "text-[var(--color-cyan-dim)]",
+  warning: "text-[var(--color-amber-dim)]",
 };
 
 export function KPIStatCard({
@@ -28,16 +28,18 @@ export function KPIStatCard({
   trail?: number[];
 }) {
   return (
-    <div className="h-panel-raised group flex flex-col gap-2 px-4 py-3">
+    <div className="h-panel flex flex-col gap-2 px-5 py-4">
       <div className="flex items-center justify-between">
-        <span className="h-tick">{label}</span>
+        <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
+          {label}
+        </span>
         {trail && <Sparkline data={trail} />}
       </div>
-      <div className={`h-mono ${size === "lg" ? "text-3xl" : "text-2xl"} font-medium tracking-tight ${toneCls[tone]}`}>
+      <div className={`${size === "lg" ? "text-2xl" : "text-xl"} font-semibold tracking-tight ${toneCls[tone]}`}>
         {value}
       </div>
       <div className="flex items-center justify-between text-[11px]">
-        {delta && <span className={`h-mono ${toneCls[tone]} opacity-90`}>{delta}</span>}
+        {delta && <span className={`${toneCls[tone]} opacity-90 font-medium`}>{delta}</span>}
         {hint && <span className="text-[var(--color-ink-dim)] truncate">{hint}</span>}
       </div>
     </div>
@@ -63,10 +65,9 @@ function Sparkline({ data }: { data: number[] }) {
         points={pts}
         fill="none"
         stroke="currentColor"
-        strokeWidth={1.25}
+        strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
-        opacity={0.75}
       />
     </svg>
   );

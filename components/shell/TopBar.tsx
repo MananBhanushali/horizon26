@@ -1,12 +1,33 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/components/providers/AppProvider";
 import { personas } from "@/data/personas";
 import { useRouter } from "next/navigation";
 
+const PROFILE_COLORS: Record<string, string> = {
+  riya: "#a8d5ba",
+  aditya: "#a3aef5",
+  priya: "#e3b3d4",
+  vikram: "#f5c89a",
+  raj: "#b8e0d2",
+  sharma: "#c8c8ff",
+};
+
 export function TopBar() {
   const { session, persona, personaId, setPersonaId, logout } = useApp();
   const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  // Click outside closes the menu
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    if (open) document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
 
   return (
     <header className="sticky top-0 z-30 bg-[var(--color-base)]/85 backdrop-blur-md">
@@ -21,70 +42,120 @@ export function TopBar() {
           </div>
           <div className="leading-tight">
             <div className="text-sm font-semibold tracking-tight">Horizon</div>
-            <div className="text-[10px] text-[var(--color-ink-dim)]">Banking · v1</div>
+            <div className="text-[10px] text-[var(--color-ink-dim)]">Plan · See · Decide</div>
           </div>
         </div>
-
-        {/* Persona switcher pills */}
-        <nav className="hidden md:flex flex-wrap gap-1.5 lg:flex-nowrap" aria-label="Personas">
-          {personas.map((p) => {
-            const active = personaId === p.id;
-            return (
-              <button
-                key={p.id}
-                onClick={() => setPersonaId(p.id)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                  active
-                    ? "bg-[var(--color-pill-dark)] text-white"
-                    : "bg-white text-[var(--color-ink-mid)] hover:text-[var(--color-ink)]"
-                }`}
-                title={p.title}
-              >
-                {p.name.split(" ")[0]}
-              </button>
-            );
-          })}
-        </nav>
 
         <div className="ml-auto flex items-center gap-2.5">
           {/* Search */}
           <button
             className="hidden md:flex items-center gap-2.5 rounded-full bg-white px-4 py-2.5 text-sm text-[var(--color-ink-dim)] hover:bg-white/90 min-w-[260px]"
             onClick={() => {
-              const ev = new KeyboardEvent("keydown", { key: "k", metaKey: true, ctrlKey: true });
+              const ev = new KeyboardEvent("keydown", {
+                key: "k",
+                metaKey: true,
+                ctrlKey: true,
+              });
               window.dispatchEvent(ev);
             }}
           >
             <SearchIcon />
-            <span className="flex-1 text-left">Search something</span>
+            <span className="flex-1 text-left">Search anywhere</span>
             <span className="text-[10px] text-[var(--color-ink-faint)]">⌘K</span>
           </button>
 
-          {/* Notification bell */}
+          {/* Notifications */}
           <button
             className="relative grid place-items-center h-10 w-10 rounded-full bg-white text-[var(--color-ink)] hover:bg-white/90"
             aria-label="Notifications"
+            onClick={() => router.push("/alerts")}
           >
             <BellIcon />
             <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-[var(--color-warn)]" />
           </button>
 
-          {/* Profile */}
-          <div className="flex items-center gap-2 pl-1">
-            <div className="grid place-items-center h-10 w-10 rounded-full bg-[var(--color-lavender-deep)] text-[var(--color-ink)] text-sm font-semibold ring-2 ring-white">
-              {session?.username.charAt(0).toUpperCase() ?? "?"}
-            </div>
+          {/* Profile dropdown */}
+          <div ref={ref} className="relative">
             <button
-              onClick={() => {
-                logout();
-                router.push("/login");
-              }}
-              className="hidden lg:block text-[11px] text-[var(--color-ink-dim)] hover:text-[var(--color-warn)]"
-              aria-label="Logout"
-              title={`Logout · ${persona.title}`}
+              onClick={() => setOpen((v) => !v)}
+              className="flex items-center gap-2 rounded-full bg-white pl-1 pr-3 py-1 hover:bg-white/90"
+              aria-haspopup="menu"
+              aria-expanded={open}
             >
-              Logout
+              <span
+                className="grid place-items-center h-9 w-9 rounded-full text-white text-sm font-semibold"
+                style={{ background: PROFILE_COLORS[personaId] ?? "#c8c8ff" }}
+              >
+                {persona.name.charAt(0)}
+              </span>
+              <div className="text-left leading-tight pr-1">
+                <div className="text-sm font-semibold">{persona.name}</div>
+                <div className="text-[10px] text-[var(--color-ink-dim)]">
+                  Sample profile · age {persona.age}
+                </div>
+              </div>
+              <ChevronDown />
             </button>
+
+            {open && (
+              <div className="absolute right-0 mt-2 w-[300px] rounded-2xl bg-white shadow-xl border border-[var(--color-edge)] p-2 z-40">
+                <div className="px-3 py-2 text-[11px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
+                  Try another sample profile
+                </div>
+                <ul className="max-h-[320px] overflow-auto">
+                  {personas.map((p) => {
+                    const active = p.id === personaId;
+                    return (
+                      <li key={p.id}>
+                        <button
+                          onClick={() => {
+                            setPersonaId(p.id);
+                            setOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-3 rounded-xl px-3 py-2 text-left ${
+                            active
+                              ? "bg-[var(--color-lavender-soft)]"
+                              : "hover:bg-[var(--color-grid)]"
+                          }`}
+                        >
+                          <span
+                            className="grid place-items-center h-9 w-9 rounded-full text-white text-sm font-semibold shrink-0"
+                            style={{ background: PROFILE_COLORS[p.id] ?? "#c8c8ff" }}
+                          >
+                            {p.name.charAt(0)}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium truncate">
+                              {p.name}, {p.age}
+                            </div>
+                            <div className="text-[11px] text-[var(--color-ink-dim)] truncate">
+                              {p.tagline}
+                            </div>
+                          </div>
+                          {active && (
+                            <span className="text-[var(--color-cyan-dim)] text-xs">●</span>
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div className="mt-1 pt-2 border-t border-[var(--color-edge)] flex items-center justify-between px-3 py-1">
+                  <span className="text-[11px] text-[var(--color-ink-dim)]">
+                    Signed in as @{session?.username}
+                  </span>
+                  <button
+                    onClick={() => {
+                      logout();
+                      router.push("/login");
+                    }}
+                    className="text-[11px] text-[var(--color-warn-dim)] hover:underline"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -105,6 +176,13 @@ function BellIcon() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 9a6 6 0 0 1 12 0v4l1.5 3h-15L6 13Z" />
       <path d="M10 19a2 2 0 0 0 4 0" />
+    </svg>
+  );
+}
+function ChevronDown() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m6 9 6 6 6-6" />
     </svg>
   );
 }

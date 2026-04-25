@@ -19,7 +19,6 @@ export function TerminalPanel({
   actions,
   active,
   raised,
-  scanline,
   noPadding,
   className = "",
   bodyClassName = "",
@@ -28,15 +27,13 @@ export function TerminalPanel({
   const baseClass = raised ? "h-panel-raised" : "h-panel";
   return (
     <section
-      className={`${baseClass} ${active ? "h-panel-active" : ""} ${
-        scanline ? "h-scanline" : ""
-      } overflow-hidden ${className}`}
+      className={`${baseClass} ${active ? "h-panel-active" : ""} overflow-hidden ${className}`}
     >
       {(title || actions) && (
-        <header className="flex items-center justify-between gap-3 border-b border-[var(--color-edge)] px-4 py-2.5">
+        <header className="flex items-center justify-between gap-3 px-5 pt-5 pb-2">
           <div className="min-w-0">
             {title && (
-              <div className="h-tick truncate text-[10.5px] tracking-[0.16em] text-[var(--color-ink-mid)]">
+              <div className="text-base font-semibold tracking-tight truncate">
                 {title}
               </div>
             )}
@@ -49,7 +46,7 @@ export function TerminalPanel({
           {actions && <div className="flex items-center gap-1.5 shrink-0">{actions}</div>}
         </header>
       )}
-      <div className={`${noPadding ? "" : "p-4"} ${bodyClassName}`}>{children}</div>
+      <div className={`${noPadding ? "" : "px-5 pb-5 pt-2"} ${bodyClassName}`}>{children}</div>
     </section>
   );
 }

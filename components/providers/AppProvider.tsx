@@ -8,6 +8,7 @@ import type { Persona } from "@/lib/types";
 
 const SESSION_KEY = "v1.horizon26.session";
 const SETTINGS_KEY = "v1.horizon26.settings";
+const FINANCES_KEY = "v1.horizon26.finances"; // suffix: .{username}.{personaId}
 
 type Session = { username: string; personaId: Persona["id"]; remember: boolean } | null;
 
@@ -23,6 +24,31 @@ const defaultSettings: Settings = {
   notifications: { macro: true, tax: true, shortfall: true },
 };
 
+export type UserFinances = {
+  monthlyIncome: number;
+  monthlyExpenses: number;
+  monthlySavings: number;
+  emergencyFund: number;
+  customized: boolean;
+};
+
+function defaultFinancesFor(persona: Persona): UserFinances {
+  const monthlyIncome = Math.round(persona.annualIncome / 12);
+  const savings = persona.monthlyContribution;
+  const monthlyExpenses = Math.max(0, monthlyIncome - Math.max(0, savings));
+  return {
+    monthlyIncome,
+    monthlyExpenses,
+    monthlySavings: savings,
+    emergencyFund: Math.round(persona.netWorth * (persona.allocation.liquid / 100)),
+    customized: false,
+  };
+}
+
+function financesKeyFor(username: string | undefined, personaId: string): string {
+  return `${FINANCES_KEY}.${username ?? "anon"}.${personaId}`;
+}
+
 type AppCtx = {
   session: Session;
   login: (u: string, p: string, remember: boolean) => { ok: true } | { ok: false; error: string };
@@ -33,6 +59,9 @@ type AppCtx = {
   hydrated: boolean;
   settings: Settings;
   updateSettings: (patch: Partial<Settings>) => void;
+  finances: UserFinances;
+  updateFinances: (patch: Partial<UserFinances>) => void;
+  resetFinances: () => void;
 };
 
 const Ctx = createContext<AppCtx | null>(null);
@@ -44,6 +73,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [personaId, setPersonaIdState] = useState<Persona["id"]>("aditya");
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [hydrated, setHydrated] = useState(false);
+  const [financesByKey, setFinancesByKey] = useState<Record<string, UserFinances>>({});
 
   // Hydrate from storage
   useEffect(() => {
@@ -56,6 +86,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       const sraw = localStorage.getItem(SETTINGS_KEY);
       if (sraw) setSettings({ ...defaultSettings, ...JSON.parse(sraw) });
+
+      // Hydrate all finance entries
+      const map: Record<string, UserFinances> = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(FINANCES_KEY + ".")) {
+          try {
+            map[k] = JSON.parse(localStorage.getItem(k) ?? "");
+          } catch {}
+        }
+      }
+      setFinancesByKey(map);
     } catch {
       // ignore
     } finally {
@@ -120,6 +162,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [personaId]);
 
+  // Resolve current finances: persisted-for-this-(user,persona) ?? defaults
+  const finKey = financesKeyFor(session?.username, persona.id);
+  const finances = useMemo<UserFinances>(() => {
+    return financesByKey[finKey] ?? defaultFinancesFor(persona);
+  }, [financesByKey, finKey, persona]);
+
+  const updateFinances = useCallback(
+    (patch: Partial<UserFinances>) => {
+      setFinancesByKey((map) => {
+        const current = map[finKey] ?? defaultFinancesFor(persona);
+        const next: UserFinances = { ...current, ...patch, customized: true };
+        // Auto-derive savings if user changes income/expenses but not savings
+        if (
+          (patch.monthlyIncome !== undefined || patch.monthlyExpenses !== undefined) &&
+          patch.monthlySavings === undefined
+        ) {
+          next.monthlySavings = next.monthlyIncome - next.monthlyExpenses;
+        }
+        try {
+          localStorage.setItem(finKey, JSON.stringify(next));
+        } catch {}
+        return { ...map, [finKey]: next };
+      });
+    },
+    [finKey, persona]
+  );
+
+  const resetFinances = useCallback(() => {
+    setFinancesByKey((map) => {
+      const next = { ...map };
+      delete next[finKey];
+      try {
+        localStorage.removeItem(finKey);
+      } catch {}
+      return next;
+    });
+  }, [finKey]);
+
   const value: AppCtx = {
     session,
     login,
@@ -130,6 +210,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     hydrated,
     settings,
     updateSettings,
+    finances,
+    updateFinances,
+    resetFinances,
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
