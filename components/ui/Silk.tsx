@@ -1,8 +1,21 @@
 /* eslint-disable react/no-unknown-property */
-import React, { forwardRef, useMemo, useRef, useLayoutEffect } from 'react';
+import React, { forwardRef, useMemo, useRef, useLayoutEffect, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree, RootState } from '@react-three/fiber';
 import { Color, Mesh, ShaderMaterial } from 'three';
 import { IUniform } from 'three';
+
+const isWebGLAvailable = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  try {
+    const canvas = document.createElement('canvas');
+    return !!(
+      window.WebGLRenderingContext &&
+      (canvas.getContext('webgl2') || canvas.getContext('webgl'))
+    );
+  } catch {
+    return false;
+  }
+};
 
 type NormalizedRGB = [number, number, number];
 
@@ -128,6 +141,11 @@ export interface SilkProps {
 
 const Silk: React.FC<SilkProps> = ({ speed = 5, scale = 1, color = '#7B7481', noiseIntensity = 1.5, rotation = 0 }) => {
   const meshRef = useRef<Mesh>(null);
+  const [webglOk, setWebglOk] = useState(false);
+
+  useEffect(() => {
+    setWebglOk(isWebGLAvailable());
+  }, []);
 
   const uniforms = useMemo<SilkUniforms>(
     () => ({
@@ -140,6 +158,8 @@ const Silk: React.FC<SilkProps> = ({ speed = 5, scale = 1, color = '#7B7481', no
     }),
     [speed, scale, noiseIntensity, color, rotation]
   );
+
+  if (!webglOk) return null;
 
   return (
     <Canvas dpr={[1, 2]} frameloop="always">

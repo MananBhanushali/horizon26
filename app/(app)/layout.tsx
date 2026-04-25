@@ -3,7 +3,6 @@
 import { ReactNode } from "react";
 import { TopBar } from "@/components/shell/TopBar";
 import { LeftRail } from "@/components/shell/LeftRail";
-import { MobileNav } from "@/components/shell/MobileNav";
 import { useApp } from "@/components/providers/AppProvider";
 
 export default function AppShellLayout({ children }: { children: ReactNode }) {
@@ -25,11 +24,10 @@ export default function AppShellLayout({ children }: { children: ReactNode }) {
       <TopBar />
       <div className="flex flex-1 min-h-0">
         <LeftRail />
-        <main className="flex-1 min-w-0 px-5 py-4 lg:px-7 lg:py-5 pb-20 lg:pb-8">
+        <main className="flex-1 min-w-0 px-3 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-5 pb-8">
           <div className="h-cross max-w-[1400px] mx-auto">{children}</div>
         </main>
       </div>
-      <MobileNav />
     </div>
   );
 }

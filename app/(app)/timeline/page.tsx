@@ -789,8 +789,8 @@ function InteractiveTimeline({
         ref={svgRef}
         viewBox={`0 0 ${SVG_W} ${SVG_H}`}
         preserveAspectRatio="none"
-        className="w-full select-none"
-        style={{ height: SVG_H, touchAction: "none" }}
+        className="w-full select-none h-[260px] sm:h-[320px] lg:h-[360px]"
+        style={{ touchAction: "none" }}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={() => {

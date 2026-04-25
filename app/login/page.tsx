@@ -2,9 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useApp } from "@/components/providers/AppProvider";
 import { Logo } from "@/components/ui/Logo";
 import MagnetLines from "@/components/ui/MagnetLines";
+import FinanceDecorations from "@/components/ui/FinanceDecorations";
+
+// FinanceScene uses WebGL/Three.js — render client-only.
+const FinanceScene = dynamic(() => import("@/components/ui/FinanceScene"), {
+  ssr: false,
+});
 
 export default function LoginPage() {
   const { login } = useApp();
@@ -35,7 +42,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-base)] flex items-center justify-center p-4" style={{ position: "relative", overflow: "hidden" }}>
+    <div
+      className="min-h-screen bg-[var(--color-base)] flex items-center justify-center p-4"
+      style={{ position: "relative", overflow: "hidden" }}
+    >
       {/* Background MagnetLines effect */}
       <div
         style={{
@@ -60,7 +70,24 @@ export default function LoginPage() {
           style={{ pointerEvents: "auto", width: "100vw", height: "100vh" }}
         />
       </div>
-      <div className="w-full max-w-md rounded-[24px] border border-[var(--color-edge)] bg-[var(--color-panel)] p-8 shadow-sm" style={{ position: "relative", zIndex: 1 }}>
+
+      {/* Scattered finance SVG decorations */}
+      <FinanceDecorations />
+
+      {/* Interactive 3D finance scene (Three.js) */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          zIndex: 3,
+        }}
+      >
+        <FinanceScene />
+      </div>
+
+      <div className="w-full max-w-md rounded-[24px] border border-[var(--color-edge)] bg-[var(--color-panel)] p-8 shadow-sm" style={{ position: "relative", zIndex: 5 }}>
         <div className="mb-8 text-center">
           <Logo className="mb-6 scale-90" />
           <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-ink)]">

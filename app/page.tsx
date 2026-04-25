@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import TextPressure from "@/components/ui/TextPressure";
 import StaggeredMenu from "@/components/ui/StaggeredMenu";
-import Silk from "@/components/ui/Silk";
 import { LogoHorizontal } from "@/components/ui/Logo";
 import { useState } from "react";
 

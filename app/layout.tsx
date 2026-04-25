@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Horizon Terminal — Project Horizon",
+  title: "Project Horizon",
   description:
     "Project Horizon — financial planning and portfolio intelligence terminal.",
 };
