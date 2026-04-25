@@ -11,6 +11,7 @@ import {
 import TextPressure from "@/components/ui/TextPressure";
 import StaggeredMenu from "@/components/ui/StaggeredMenu";
 import { LogoHorizontal } from "@/components/ui/Logo";
+import Silk from "@/components/ui/Silk";
 import { useState } from "react";
 
 export default function Index() {
