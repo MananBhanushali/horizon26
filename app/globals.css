@@ -1,26 +1,200 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", "Menlo", monospace;
+
+  /* Background layers */
+  --color-base: #07090c;
+  --color-panel: #0d1117;
+  --color-raised: #131a23;
+  --color-edge: #1c2733;
+  --color-edge-strong: #2a3949;
+  --color-grid: #11181f;
+
+  /* Text */
+  --color-ink: #e6edf3;
+  --color-ink-mid: #b1bac4;
+  --color-ink-dim: #6e7781;
+  --color-ink-faint: #485058;
+
+  /* Accents */
+  --color-cyan: #22d3ee;
+  --color-cyan-dim: #0891a8;
+  --color-cyan-soft: rgba(34, 211, 238, 0.12);
+  --color-mint: #34d399;
+  --color-mint-dim: #0e9c70;
+  --color-mint-soft: rgba(52, 211, 153, 0.12);
+  --color-warn: #f87171;
+  --color-warn-dim: #b91c1c;
+  --color-warn-soft: rgba(248, 113, 113, 0.12);
+  --color-slate: #6388c2;
+  --color-slate-dim: #3a5d92;
+  --color-slate-soft: rgba(99, 136, 194, 0.14);
+  --color-amber: #d4a857;
+  --color-amber-dim: #8c6b22;
+  --color-amber-soft: rgba(212, 168, 87, 0.14);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background: var(--color-base);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv01", "cv02";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-image:
+    radial-gradient(1200px 600px at 100% -10%, rgba(34, 211, 238, 0.04), transparent 60%),
+    radial-gradient(1000px 500px at -10% 100%, rgba(99, 136, 194, 0.05), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Terminal panel base */
+.h-panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(0, 0, 0, 0)) var(--color-panel);
+  border: 1px solid var(--color-edge);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.02),
+    0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.h-panel-raised {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(0, 0, 0, 0)) var(--color-raised);
+  border: 1px solid var(--color-edge);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.h-panel-active {
+  border-color: rgba(34, 211, 238, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 0 1px rgba(34, 211, 238, 0.18),
+    0 0 18px -8px rgba(34, 211, 238, 0.6);
+}
+
+.h-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.h-scanline {
+  position: relative;
+}
+.h-scanline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.015) 0px,
+    rgba(255, 255, 255, 0.015) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+}
+
+.h-divider {
+  border-top: 1px solid var(--color-edge);
+}
+
+.h-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum", "zero";
+  letter-spacing: -0.01em;
+}
+
+.h-tick {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+}
+
+/* Focus visible */
+*:focus-visible {
+  outline: 2px solid var(--color-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Selection */
+::selection {
+  background: rgba(34, 211, 238, 0.28);
+  color: #fff;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-edge-strong);
+  border-radius: 999px;
+  border: 2px solid var(--color-base);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a4d63;
+}
+
+/* Shimmer loader */
+@keyframes h-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.h-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.02) 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  background-size: 800px 100%;
+  animation: h-shimmer 1.6s linear infinite;
+}
+
+/* Pulse for live indicator */
+@keyframes h-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.h-pulse {
+  animation: h-pulse 1.6s ease-in-out infinite;
+}
+
+/* Small fade-in */
+@keyframes h-fade-in {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.h-fade-in {
+  animation: h-fade-in 180ms ease-out both;
+}
+
+/* Cross-fade for persona swap */
+@keyframes h-cross {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.h-cross {
+  animation: h-cross 220ms ease-out both;
 }
