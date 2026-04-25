@@ -54,9 +54,7 @@ export default function Index() {
           <h1 className="text-6xl lg:text-[5.5rem] font-bold tracking-tight text-[#111827] mb-6 leading-[1.05]">
             Financial planning
             <br />
-            <h1 className="text-6xl lg:text-[5.5rem] font-bold tracking-tight text-[#911ba6] mb-6 leading-[1.05]">
-              for real life
-            </h1>
+            <span className="text-[#911ba6]">for real life</span>
           </h1>
           <p className="text-lg text-slate-600 mb-10 leading-relaxed max-w-lg">
             Navigate your financial future with the Milestone Engine. A dynamic,
