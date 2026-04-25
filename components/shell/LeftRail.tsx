@@ -13,7 +13,7 @@ const PRIMARY: { label: string; href: string; icon: React.ReactNode }[] = [
 ];
 
 const SECONDARY: { label: string; href: string; icon: React.ReactNode }[] = [
-  { label: "Black-Litterman", href: "/black-litterman", icon: <SparkIcon /> },
+  { label: "Allocation Logic", href: "/black-litterman", icon: <SparkIcon /> },
   { label: "Macro", href: "/macro", icon: <PulseIcon /> },
   { label: "Tax", href: "/tax", icon: <ReceiptIcon /> },
   { label: "Instruments", href: "/instruments", icon: <ListIcon /> },

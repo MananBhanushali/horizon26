@@ -13,7 +13,7 @@ export default function BlackLittermanPage() {
   return (
     <>
       <PageHeader
-        eyebrow="BLACK-LITTERMAN EXPLAINABILITY"
+        eyebrow="ALLOCATION INTELLIGENCE"
         title="Why this allocation?"
         subtitle="Equilibrium weights + investor views → posterior returns → mean-variance optimization"
         actions={<ConfidenceBadge level={persona.confidenceLevel} label={persona.confidenceLabel} />}
@@ -22,7 +22,7 @@ export default function BlackLittermanPage() {
       <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_1fr] gap-4">
         <TerminalPanel title="EFFICIENT FRONTIER" subtitle="selected portfolio marked in amber" active scanline>
           <EfficientFrontier data={persona.efficientFrontier} selected={persona.selectedFrontierPoint} height={260} />
-          <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
             <Mini label="Selected μ" value={`${persona.selectedFrontierPoint.return.toFixed(1)}%`} />
             <Mini label="Selected σ" value={`${persona.selectedFrontierPoint.risk.toFixed(0)}%`} />
             <Mini label="Sharpe (proxy)" value={(persona.selectedFrontierPoint.return / persona.selectedFrontierPoint.risk).toFixed(2)} />
@@ -71,10 +71,10 @@ export default function BlackLittermanPage() {
       <section className="mt-4 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
         <TerminalPanel title="WHY THIS ALLOCATION" subtitle="reasoning trace">
           <p className="text-[13px] leading-relaxed text-[var(--color-ink)]">{persona.reasoningTrace}</p>
-          <div className="mt-3 border-t border-[var(--color-edge)] pt-3 grid grid-cols-3 gap-2 text-[11px]">
-            <Mini label="Risk capacity" value={persona.riskCapacity} />
-            <Mini label="Risk appetite" value={persona.riskAppetite} />
-            <Mini label="Effective" value={persona.riskScore} />
+          <div className="mt-3 border-t border-[var(--color-edge)] pt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+            <Mini label="Risk capacity" value={formatRiskMetric(persona.riskCapacity)} />
+            <Mini label="Risk appetite" value={formatRiskMetric(persona.riskAppetite)} />
+            <Mini label="Effective" value={formatRiskMetric(persona.riskScore)} />
           </div>
           <div className="mt-3 border-t border-[var(--color-edge)] pt-3">
             <div className="h-tick mb-2">PIPELINE</div>
@@ -103,6 +103,15 @@ export default function BlackLittermanPage() {
           </p>
         </TerminalPanel>
       </section>
+
+      <section className="mt-4">
+        <TerminalPanel title="BLACK-LITTERMAN EXPLAINABILITY" subtitle="detailed decomposition coming next">
+          <p className="text-[13px] leading-relaxed text-[var(--color-ink-mid)]">
+            A deeper explainability breakdown (equilibrium priors, view matrix, posterior deltas, and confidence impact)
+            will be displayed here in a later update.
+          </p>
+        </TerminalPanel>
+      </section>
     </>
   );
 }
@@ -120,7 +129,12 @@ function Mini({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded border border-[var(--color-edge)] bg-[var(--color-panel)] px-2.5 py-2">
       <div className="h-tick">{label}</div>
-      <div className="h-mono text-base mt-0.5">{value}</div>
+      <div className="h-mono mt-0.5 text-[15px] font-semibold text-[var(--color-ink)]">{value}</div>
     </div>
   );
+}
+
+function formatRiskMetric(value: number | null | undefined) {
+  if (typeof value !== "number" || Number.isNaN(value)) return "N/A";
+  return `${Math.round(value)}/100`;
 }

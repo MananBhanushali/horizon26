@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/components/providers/AppProvider";
-import { personas } from "@/data/personas";
+import { demoUsers } from "@/data/users";
+import { personaById } from "@/data/personas";
 import { useRouter } from "next/navigation";
 
 const PROFILE_COLORS: Record<string, string> = {
@@ -15,7 +16,7 @@ const PROFILE_COLORS: Record<string, string> = {
 };
 
 export function TopBar() {
-  const { session, persona, personaId, setPersonaId, logout } = useApp();
+  const { session, persona, personaId, switchUser, logout } = useApp();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -100,41 +101,30 @@ export function TopBar() {
             {open && (
               <div className="absolute right-0 mt-2 w-[300px] rounded-2xl bg-white shadow-xl border border-[var(--color-edge)] p-2 z-40">
                 <div className="px-3 py-2 text-[11px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
-                  Try another sample profile
+                  Switch user
                 </div>
-                <ul className="max-h-[320px] overflow-auto">
-                  {personas.map((p) => {
-                    const active = p.id === personaId;
+                <ul className="max-h-[240px] overflow-auto">
+                  {demoUsers.map((u) => {
+                    const active = u.username === session?.username;
+                    const linkedPersona = personaById(u.personaId);
                     return (
-                      <li key={p.id}>
+                      <li key={u.username}>
                         <button
                           onClick={() => {
-                            setPersonaId(p.id);
+                            if (!active) switchUser(u.username);
                             setOpen(false);
                           }}
-                          className={`w-full flex items-center gap-3 rounded-xl px-3 py-2 text-left ${
-                            active
-                              ? "bg-[var(--color-lavender-soft)]"
-                              : "hover:bg-[var(--color-grid)]"
+                          className={`w-full flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-left ${
+                            active ? "bg-[var(--color-lavender-soft)]" : "hover:bg-[var(--color-grid)]"
                           }`}
                         >
-                          <span
-                            className="grid place-items-center h-9 w-9 rounded-full text-white text-sm font-semibold shrink-0"
-                            style={{ background: PROFILE_COLORS[p.id] ?? "#c8c8ff" }}
-                          >
-                            {p.name.charAt(0)}
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <div className="text-sm font-medium truncate">
-                              {p.name}, {p.age}
-                            </div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">@{u.username}</div>
                             <div className="text-[11px] text-[var(--color-ink-dim)] truncate">
-                              {p.tagline}
+                              {linkedPersona.name} · {linkedPersona.title}
                             </div>
                           </div>
-                          {active && (
-                            <span className="text-[var(--color-cyan-dim)] text-xs">●</span>
-                          )}
+                          {active && <span className="text-[var(--color-cyan-dim)] text-xs">●</span>}
                         </button>
                       </li>
                     );

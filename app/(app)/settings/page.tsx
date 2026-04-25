@@ -3,12 +3,9 @@
 import { useApp } from "@/components/providers/AppProvider";
 import { TerminalPanel } from "@/components/ui/TerminalPanel";
 import { PageHeader } from "@/components/PageHeader";
-import { useToast } from "@/components/ui/ToastAlert";
-import { personas } from "@/data/personas";
 
 export default function SettingsPage() {
-  const { settings, updateSettings, session, logout } = useApp();
-  const toast = useToast();
+  const { settings, updateSettings, session } = useApp();
 
   return (
     <>
@@ -28,40 +25,6 @@ export default function SettingsPage() {
             >
               <option value="dark">Dark (default)</option>
               <option value="light">Light (coming soon)</option>
-            </select>
-          </Row>
-          <Row label="Number formatting" hint="Affects rupee grouping and lakh/crore notation.">
-            <select
-              value={settings.numberFormat}
-              onChange={(e) => {
-                updateSettings({ numberFormat: e.target.value as "indian" | "international" });
-                toast.push({ title: "Saved", body: "Number formatting updated.", severity: "success" });
-              }}
-              className="h-mono w-full rounded border border-[var(--color-edge)] bg-[var(--color-panel)] px-2.5 py-1.5 text-xs"
-            >
-              <option value="indian">Indian (Rs. 12,50,000)</option>
-              <option value="international">International ($1,250,000)</option>
-            </select>
-          </Row>
-        </TerminalPanel>
-
-        <TerminalPanel title="DEFAULT PERSONA">
-          <Row label="On login, land on" hint="Override the user's bound persona.">
-            <select
-              value={settings.defaultPersona ?? ""}
-              onChange={(e) => {
-                const v = e.target.value || null;
-                updateSettings({ defaultPersona: (v as never) || null });
-                toast.push({ title: "Saved", body: "Default persona updated.", severity: "success" });
-              }}
-              className="h-mono w-full rounded border border-[var(--color-edge)] bg-[var(--color-panel)] px-2.5 py-1.5 text-xs"
-            >
-              <option value="">— bound to user account —</option>
-              {personas.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.title}
-                </option>
-              ))}
             </select>
           </Row>
         </TerminalPanel>
@@ -84,24 +47,6 @@ export default function SettingsPage() {
               }
             />
           ))}
-        </TerminalPanel>
-
-        <TerminalPanel title="SESSION">
-          <Row label="Username" hint="Demo auth — no PII stored.">
-            <input readOnly value={session?.username ?? ""} className="h-mono w-full rounded border border-[var(--color-edge)] bg-[var(--color-panel)] px-2.5 py-1.5 text-xs" />
-          </Row>
-          <button
-            onClick={() => {
-              logout();
-              toast.push({ title: "Signed out", severity: "info" });
-            }}
-            className="mt-3 h-mono text-xs rounded border border-[var(--color-warn-dim)]/50 bg-[var(--color-warn-soft)] px-3 py-1.5 text-[var(--color-warn)]"
-          >
-            CLEAR SESSION
-          </button>
-          <p className="mt-3 text-[11.5px] text-[var(--color-ink-dim)] leading-snug">
-            All data is local-only. No telemetry. Demo credentials live in <span className="h-mono">data/users.ts</span>.
-          </p>
         </TerminalPanel>
       </section>
     </>

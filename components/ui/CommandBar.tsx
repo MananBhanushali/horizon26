@@ -2,14 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { personas } from "@/data/personas";
 import { useApp } from "@/components/providers/AppProvider";
 
 type Command = {
   id: string;
   label: string;
   hint: string;
-  group: "Navigate" | "Persona" | "Actions";
+  group: "Navigate" | "Actions";
   action: () => void;
   keywords?: string[];
 };
@@ -20,7 +19,7 @@ export function CommandBar() {
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const { setPersonaId, logout } = useApp();
+  const { logout } = useApp();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -58,17 +57,9 @@ export function CommandBar() {
       { id: "nav-whatif", label: "What-if Sandbox", hint: "/sandbox", group: "Navigate", action: () => router.push("/sandbox") },
       { id: "nav-alerts", label: "Notifications & Alerts", hint: "/alerts", group: "Navigate", action: () => router.push("/alerts") },
       { id: "nav-settings", label: "Settings", hint: "/settings", group: "Navigate", action: () => router.push("/settings") },
-      ...personas.map((p) => ({
-        id: `persona-${p.id}`,
-        label: `Switch persona → ${p.name}`,
-        hint: `${p.title} · age ${p.age}`,
-        group: "Persona" as const,
-        action: () => setPersonaId(p.id),
-        keywords: [p.title],
-      })),
       { id: "act-logout", label: "Logout", hint: "Clear session", group: "Actions", action: () => { logout(); router.push("/login"); } },
     ],
-    [router, setPersonaId, logout]
+    [router, logout]
   );
 
   const filtered = useMemo(() => {

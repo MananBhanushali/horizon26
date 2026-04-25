@@ -13,14 +13,10 @@ const FINANCES_KEY = "v1.horizon26.finances"; // suffix: .{username}.{personaId}
 type Session = { username: string; personaId: Persona["id"]; remember: boolean } | null;
 
 type Settings = {
-  numberFormat: "indian" | "international";
-  defaultPersona: Persona["id"] | null;
   notifications: { macro: boolean; tax: boolean; shortfall: boolean };
 };
 
 const defaultSettings: Settings = {
-  numberFormat: "indian",
-  defaultPersona: null,
   notifications: { macro: true, tax: true, shortfall: true },
 };
 
@@ -52,6 +48,7 @@ function financesKeyFor(username: string | undefined, personaId: string): string
 type AppCtx = {
   session: Session;
   login: (u: string, p: string, remember: boolean) => { ok: true } | { ok: false; error: string };
+  switchUser: (username: string) => { ok: true } | { ok: false; error: string };
   logout: () => void;
   personaId: Persona["id"];
   setPersonaId: (id: Persona["id"]) => void;
@@ -74,6 +71,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [hydrated, setHydrated] = useState(false);
   const [financesByKey, setFinancesByKey] = useState<Record<string, UserFinances>>({});
+
+  const persistSession = useCallback((next: NonNullable<Session>) => {
+    const raw = JSON.stringify(next);
+    if (next.remember) {
+      localStorage.setItem(SESSION_KEY, raw);
+      sessionStorage.removeItem(SESSION_KEY);
+    } else {
+      sessionStorage.setItem(SESSION_KEY, raw);
+      localStorage.removeItem(SESSION_KEY);
+    }
+    setSession(next);
+    setPersonaIdState(next.personaId);
+  }, []);
 
   // Hydrate from storage
   useEffect(() => {
@@ -121,18 +131,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const user = demoUsers.find((x) => x.username.toLowerCase() === u.trim().toLowerCase());
     if (!user || user.password !== p) return { ok: false, error: "Invalid credentials" };
     const s: NonNullable<Session> = { username: user.username, personaId: user.personaId, remember };
-    const raw = JSON.stringify(s);
-    if (remember) {
-      localStorage.setItem(SESSION_KEY, raw);
-      sessionStorage.removeItem(SESSION_KEY);
-    } else {
-      sessionStorage.setItem(SESSION_KEY, raw);
-      localStorage.removeItem(SESSION_KEY);
-    }
-    setSession(s);
-    setPersonaIdState(user.personaId);
+    persistSession(s);
     return { ok: true };
-  }, []);
+  }, [persistSession]);
+
+  const switchUser = useCallback<AppCtx["switchUser"]>((username) => {
+    const user = demoUsers.find((x) => x.username.toLowerCase() === username.trim().toLowerCase());
+    if (!user) return { ok: false, error: "User not found" };
+    const remember = session?.remember ?? true;
+    const s: NonNullable<Session> = { username: user.username, personaId: user.personaId, remember };
+    persistSession(s);
+    return { ok: true };
+  }, [persistSession, session?.remember]);
 
   const logout = useCallback(() => {
     localStorage.removeItem(SESSION_KEY);
@@ -203,6 +213,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value: AppCtx = {
     session,
     login,
+    switchUser,
     logout,
     personaId,
     setPersonaId,
