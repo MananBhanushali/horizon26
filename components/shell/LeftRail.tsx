@@ -3,57 +3,200 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const NAV: { label: string; href: string; icon: string; group: string }[] = [
-  { label: "Dashboard", href: "/dashboard", icon: "▦", group: "Overview" },
-  { label: "Timeline", href: "/timeline", icon: "↦", group: "Overview" },
-  { label: "Allocation", href: "/allocation", icon: "◐", group: "Intelligence" },
-  { label: "Black-Litterman", href: "/black-litterman", icon: "✦", group: "Intelligence" },
-  { label: "Macro", href: "/macro", icon: "◌", group: "Intelligence" },
-  { label: "Tax Impact", href: "/tax", icon: "₹", group: "Decisions" },
-  { label: "Instruments", href: "/instruments", icon: "≡", group: "Decisions" },
-  { label: "Scenarios", href: "/scenarios", icon: "△", group: "Decisions" },
-  { label: "What-if", href: "/sandbox", icon: "↻", group: "Decisions" },
-  { label: "Alerts", href: "/alerts", icon: "!", group: "System" },
-  { label: "Settings", href: "/settings", icon: "⚙", group: "System" },
+const NAV: { label: string; href: string; icon: React.ReactNode }[] = [
+  { label: "Home", href: "/dashboard", icon: <HomeIcon /> },
+  { label: "Wallet", href: "/instruments", icon: <WalletIcon /> },
+  { label: "Marketplace", href: "/allocation", icon: <MarketIcon /> },
+  { label: "Transfer", href: "/timeline", icon: <TransferIcon /> },
+  { label: "Settings", href: "/settings", icon: <SettingsIcon /> },
+];
+
+const SECONDARY: { label: string; href: string; icon: React.ReactNode }[] = [
+  { label: "Macro", href: "/macro", icon: <PulseIcon /> },
+  { label: "Black-Litterman", href: "/black-litterman", icon: <SparkIcon /> },
+  { label: "Tax", href: "/tax", icon: <ReceiptIcon /> },
+  { label: "Scenarios", href: "/scenarios", icon: <BranchIcon /> },
+  { label: "What-if", href: "/sandbox", icon: <RefreshIcon /> },
+  { label: "Alerts", href: "/alerts", icon: <BellIcon /> },
 ];
 
 export function LeftRail() {
   const pathname = usePathname();
-  const groups = NAV.reduce<Record<string, typeof NAV>>((acc, n) => {
-    (acc[n.group] ??= []).push(n);
-    return acc;
-  }, {});
 
   return (
     <nav
-      className="hidden lg:flex flex-col gap-3 border-r border-[var(--color-edge)] bg-[var(--color-base)] px-2 py-3 w-[180px] shrink-0 sticky top-[60px] h-[calc(100vh-60px)] overflow-y-auto"
+      className="hidden lg:flex flex-col gap-2 bg-[var(--color-lavender-soft)] px-3 py-5 w-[220px] shrink-0 sticky top-[60px] h-[calc(100vh-60px)] overflow-y-auto rounded-tr-[28px] rounded-br-[28px]"
       aria-label="Primary"
     >
-      {Object.entries(groups).map(([g, items]) => (
-        <div key={g} className="flex flex-col gap-0.5">
-          <div className="h-tick px-2 pb-1">{g}</div>
-          {items.map((n) => {
+      <div className="flex flex-col gap-1.5">
+        {NAV.map((n) => {
+          const active = pathname === n.href;
+          return (
+            <Link
+              key={n.href}
+              href={n.href}
+              className={`flex items-center gap-3 rounded-full px-4 py-3 text-sm font-medium transition-colors ${
+                active
+                  ? "bg-[var(--color-pill-dark)] text-white shadow-md"
+                  : "text-[var(--color-ink)] hover:bg-white/60"
+              }`}
+            >
+              <span
+                className={`grid place-items-center h-5 w-5 ${
+                  active ? "text-white" : "text-[var(--color-ink)]"
+                }`}
+              >
+                {n.icon}
+              </span>
+              <span>{n.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 pt-3 border-t border-white/70">
+        <div className="px-4 pb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
+          Intelligence
+        </div>
+        <div className="flex flex-col gap-1">
+          {SECONDARY.map((n) => {
             const active = pathname === n.href;
             return (
               <Link
                 key={n.href}
                 href={n.href}
-                className={`flex items-center gap-2 rounded px-2 py-1.5 text-xs transition-colors ${
+                className={`flex items-center gap-3 rounded-full px-4 py-2 text-xs transition-colors ${
                   active
-                    ? "bg-[var(--color-cyan-soft)] text-[var(--color-cyan)] border border-[var(--color-cyan-dim)]/40"
-                    : "border border-transparent text-[var(--color-ink-mid)] hover:bg-[var(--color-raised)] hover:text-[var(--color-ink)]"
+                    ? "bg-[var(--color-pill-dark)] text-white"
+                    : "text-[var(--color-ink-mid)] hover:bg-white/60 hover:text-[var(--color-ink)]"
                 }`}
               >
-                <span className="h-mono w-4 text-center text-[var(--color-ink-dim)]">{n.icon}</span>
+                <span className="grid place-items-center h-4 w-4">{n.icon}</span>
                 <span>{n.label}</span>
               </Link>
             );
           })}
         </div>
-      ))}
-      <div className="mt-auto px-2 pt-3 text-[10px] text-[var(--color-ink-faint)] leading-relaxed">
+      </div>
+
+      <div className="mt-auto px-3 pt-3 text-[10px] text-[var(--color-ink-dim)] leading-relaxed">
         Not financial advice. All numbers illustrative.
       </div>
     </nav>
+  );
+}
+
+/* Inline mono-line icons (stroke-based, banking style) */
+function Icon({ children }: { children: React.ReactNode }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {children}
+    </svg>
+  );
+}
+
+function HomeIcon() {
+  return (
+    <Icon>
+      <path d="M3 11.5 12 4l9 7.5" />
+      <path d="M5 10v9h14v-9" />
+      <path d="M10 19v-5h4v5" />
+    </Icon>
+  );
+}
+function WalletIcon() {
+  return (
+    <Icon>
+      <rect x="3" y="6" width="18" height="13" rx="3" />
+      <path d="M3 10h18" />
+      <circle cx="16.5" cy="14.5" r="1.2" />
+    </Icon>
+  );
+}
+function MarketIcon() {
+  return (
+    <Icon>
+      <path d="M4 10v9h16v-9" />
+      <path d="M3 10l2-5h14l2 5" />
+      <path d="M10 19v-5h4v5" />
+    </Icon>
+  );
+}
+function TransferIcon() {
+  return (
+    <Icon>
+      <path d="M4 8h13" />
+      <path d="m14 5 3 3-3 3" />
+      <path d="M20 16H7" />
+      <path d="m10 13-3 3 3 3" />
+    </Icon>
+  );
+}
+function SettingsIcon() {
+  return (
+    <Icon>
+      <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+      <circle cx="12" cy="12" r="3.5" />
+    </Icon>
+  );
+}
+function PulseIcon() {
+  return (
+    <Icon>
+      <path d="M3 12h4l2-6 4 12 2-6h6" />
+    </Icon>
+  );
+}
+function SparkIcon() {
+  return (
+    <Icon>
+      <path d="M12 4v6M12 14v6M4 12h6M14 12h6" />
+    </Icon>
+  );
+}
+function ReceiptIcon() {
+  return (
+    <Icon>
+      <path d="M5 3v18l2-1.5L9 21l2-1.5L13 21l2-1.5L17 21l2-1.5V3" />
+      <path d="M8 8h8M8 12h8M8 16h5" />
+    </Icon>
+  );
+}
+function BranchIcon() {
+  return (
+    <Icon>
+      <circle cx="6" cy="6" r="2" />
+      <circle cx="6" cy="18" r="2" />
+      <circle cx="18" cy="12" r="2" />
+      <path d="M6 8v8" />
+      <path d="M8 6h6a4 4 0 0 1 4 4v0" />
+    </Icon>
+  );
+}
+function RefreshIcon() {
+  return (
+    <Icon>
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+      <path d="M21 4v4h-4" />
+      <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+      <path d="M3 20v-4h4" />
+    </Icon>
+  );
+}
+function BellIcon() {
+  return (
+    <Icon>
+      <path d="M6 9a6 6 0 0 1 12 0v4l1.5 3h-15L6 13Z" />
+      <path d="M10 19a2 2 0 0 0 4 0" />
+    </Icon>
   );
 }
