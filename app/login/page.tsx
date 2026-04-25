@@ -4,238 +4,238 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/components/providers/AppProvider";
 import { demoUsers } from "@/data/users";
-import { personas } from "@/data/personas";
-
-const PROFILE_COLORS: Record<string, string> = {
-  riya: "#a8d5ba",
-  aditya: "#a3aef5",
-  priya: "#e3b3d4",
-  vikram: "#f5c89a",
-  raj: "#b8e0d2",
-  sharma: "#c8c8ff",
-};
+import { TerminalPanel } from "@/components/ui/TerminalPanel";
+import Silk from "@/components/ui/Silk";
 
 export default function LoginPage() {
   const { login } = useApp();
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showManual, setShowManual] = useState(false);
 
-  const signInAs = (u: string, p: string) => {
-    setLoading(true);
-    setError(null);
-    setTimeout(() => {
-      const r = login(u, p, true);
-      setLoading(false);
-      if (r.ok) router.push("/dashboard");
-      else setError(r.error);
-    }, 200);
-  };
-
-  const onManualSubmit = (e: React.FormEvent) => {
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     if (!username.trim() || !password.trim()) {
       setError("Username and password are required.");
       return;
     }
-    signInAs(username, password);
+    setLoading(true);
+    setTimeout(() => {
+      const r = login(username, password, remember);
+      setLoading(false);
+      if (!r.ok) {
+        setError(r.error);
+      } else {
+        router.push("/dashboard");
+      }
+    }, 220);
+  };
+
+  const loadDemo = () => {
+    setLoading(true);
+    setTimeout(() => {
+      const r = login("demo", "demo", true);
+      setLoading(false);
+      if (r.ok) router.push("/dashboard");
+      else setError(r.error);
+    }, 220);
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col">
-      {/* Top brand bar */}
-      <header className="px-6 py-5 flex items-center gap-3">
-        <div
-          className="grid place-items-center h-10 w-10 rounded-2xl bg-[var(--color-pill-dark)] text-white font-bold"
-          aria-hidden
-        >
-          H
-        </div>
-        <div className="leading-tight">
-          <div className="text-base font-semibold tracking-tight">Horizon</div>
-          <div className="text-[11px] text-[var(--color-ink-dim)]">
-            Plan goals · See your money agree
-          </div>
-        </div>
-      </header>
+    <div className="relative min-h-screen overflow-hidden bg-[var(--color-base)]">
+      {/* Background Effects */}
+      <div className="absolute inset-0 -z-10 opacity-10 pointer-events-none">
+        <Silk speed={2} scale={1.2} color="#22d3ee" noiseIntensity={1.5} />
+      </div>
+      <div className="absolute inset-0 h-grid-bg opacity-30 pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-cyan/30 to-transparent" />
 
-      <main className="flex-1 grid place-items-center px-4 pb-10">
-        <div className="w-full max-w-5xl">
-          {/* Hero */}
-          <div className="text-center mb-7">
-            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
-              See if your savings can hit your life goals
-            </h1>
-            <p className="mt-3 text-sm md:text-base text-[var(--color-ink-mid)] max-w-2xl mx-auto leading-relaxed">
-              Drag goals onto a timeline and watch the math run. Buying a house at 32 drains the
-              corpus that was funding a business at 35 — Horizon shows you the cascade, not
-              calculator-by-calculator.
-            </p>
-          </div>
-
-          {/* Profile cards — one-click sign-in */}
-          <div className="rounded-3xl bg-white p-6 md:p-7 shadow-sm border border-[var(--color-edge)]">
-            <div className="flex items-end justify-between mb-4 flex-wrap gap-2">
-              <div>
-                <div className="text-base font-semibold tracking-tight">
-                  Continue as a sample profile
-                </div>
-                <div className="text-xs text-[var(--color-ink-dim)] mt-0.5">
-                  Six pre-built financial situations. Pick one to explore — no signup, all data is
-                  illustrative.
-                </div>
+      <div className="relative grid place-items-center min-h-screen px-4 py-10">
+        <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-stretch">
+          {/* Left: Terminal banner */}
+          <div className="h-panel-raised h-scanline flex flex-col justify-between p-6 lg:p-8 min-h-[420px]">
+            <div className="flex items-center gap-3">
+              <div
+                className="grid place-items-center h-9 w-9 rounded border border-[var(--color-cyan-dim)]/50 bg-[var(--color-base)] text-[var(--color-cyan)] h-mono text-lg font-bold"
+                aria-hidden
+              >
+                H
               </div>
-              <button
-                onClick={() => setShowManual((v) => !v)}
-                className="text-xs text-[var(--color-cyan-dim)] hover:underline"
-              >
-                {showManual ? "Hide" : "Use a username instead"}
-              </button>
+              <div className="leading-tight">
+                <div className="h-mono text-base tracking-[0.06em]">
+                  HORIZON TERMINAL
+                </div>
+                <div className="h-tick">PROJECT HORIZON · PS-09 · v1</div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {personas.map((p) => {
-                const user = demoUsers.find((u) => u.personaId === p.id);
-                if (!user) return null;
-                const onTrack = p.status === "ON_TRACK" || p.status === "SURPLUS";
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => signInAs(user.username, user.password)}
-                    disabled={loading}
-                    className="group text-left rounded-2xl border border-[var(--color-edge)] bg-[var(--color-grid)] hover:bg-white hover:border-[var(--color-lavender-deep)] hover:shadow-md transition-all p-4 disabled:opacity-50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="grid place-items-center h-12 w-12 rounded-full text-white text-base font-semibold"
-                        style={{ background: PROFILE_COLORS[p.id] ?? "#c8c8ff" }}
-                      >
-                        {p.name.charAt(0)}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-semibold tracking-tight">
-                          {p.name}, {p.age}
-                        </div>
-                        <div className="text-[11px] text-[var(--color-ink-dim)] truncate">
-                          {p.title.replace(`${p.name} the `, "")}
-                        </div>
-                      </div>
-                      <span
-                        className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-                        style={{
-                          color: onTrack ? "var(--color-mint-dim)" : "var(--color-warn-dim)",
-                          background: onTrack
-                            ? "var(--color-mint-soft)"
-                            : "var(--color-warn-soft)",
-                        }}
-                      >
-                        {p.headlineStatus}
-                      </span>
-                    </div>
-                    <p className="mt-3 text-xs text-[var(--color-ink-mid)] leading-snug">
-                      {p.tagline}
-                    </p>
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
-                      <div className="rounded-lg bg-white/70 px-2 py-1">
-                        <div className="text-[10px] text-[var(--color-ink-dim)]">Net worth</div>
-                        <div className="font-semibold tabular-nums">
-                          ₹{compactDigits(p.netWorth)}
-                        </div>
-                      </div>
-                      <div className="rounded-lg bg-white/70 px-2 py-1">
-                        <div className="text-[10px] text-[var(--color-ink-dim)]">
-                          {p.monthlyContribution >= 0 ? "Monthly SIP" : "Monthly draw"}
-                        </div>
-                        <div className="font-semibold tabular-nums">
-                          ₹{compactDigits(Math.abs(p.monthlyContribution))}
-                          <span className="text-[10px] text-[var(--color-ink-dim)] ml-0.5">
-                            /mo
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="mt-8 lg:mt-0">
+              <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight leading-tight">
+                Plan the life you want.
+                <br />
+                <span className="text-[var(--color-cyan)]">
+                  See if your money agrees.
+                </span>
+              </h1>
+              <p className="mt-4 max-w-md text-sm text-[var(--color-ink-mid)] leading-relaxed">
+                A financial planning terminal that simulates milestones,
+                allocates with Black-Litterman, and shows you{" "}
+                <em className="text-[var(--color-ink)]">why</em> — not just{" "}
+                <em className="text-[var(--color-ink)]">what</em>.
+              </p>
+              <ul className="mt-6 grid grid-cols-2 gap-2 text-[12.5px] text-[var(--color-ink-mid)]">
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-cyan)]" />{" "}
+                  Goal-based bucketing
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-mint)]" />{" "}
+                  Bull / Base / Bear
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-amber)]" />{" "}
+                  Macro-aware triggers
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-slate)]" />{" "}
+                  Tax-adjusted returns
+                </li>
+              </ul>
             </div>
 
-            {/* Manual login (collapsible) */}
-            {showManual && (
-              <form
-                onSubmit={onManualSubmit}
-                className="mt-6 pt-5 border-t border-[var(--color-edge)] grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] items-end gap-3"
-              >
-                <Field label="Username">
-                  <input
-                    type="text"
-                    autoComplete="username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="aditya"
-                    className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2.5 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
-                  />
-                </Field>
-                <Field label="Password">
-                  <input
-                    type="password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="demo123"
-                    className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2.5 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
-                  />
-                </Field>
+            <div className="mt-8 flex items-center justify-between text-[10.5px] text-[var(--color-ink-faint)] h-mono">
+              <span>NOT FINANCIAL ADVICE</span>
+              <span>{"//"} APR 2026 SNAPSHOT</span>
+            </div>
+          </div>
+
+          {/* Right: Login card */}
+          <TerminalPanel
+            title="SESSION GATE"
+            subtitle="Demo authentication — no real credentials required"
+            raised
+            scanline
+          >
+            <div className="mb-3 rounded border border-[var(--color-amber-dim)]/40 bg-[var(--color-amber-soft)] px-3 py-2 text-[11.5px] text-[var(--color-amber)]">
+              ⚠ Demo auth only — credentials are visible in the bundle. Do{" "}
+              <strong>not</strong> use real passwords.
+            </div>
+
+            <form
+              onSubmit={onSubmit}
+              className="flex flex-col gap-3"
+              noValidate
+            >
+              <Field label="USERNAME">
+                <input
+                  type="text"
+                  autoComplete="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="h-mono w-full rounded border border-[var(--color-edge)] bg-[var(--color-base)] px-3 py-2 text-sm focus:border-[var(--color-cyan-dim)] focus:outline-none"
+                  placeholder="aditya"
+                  aria-required
+                />
+              </Field>
+              <Field label="PASSWORD">
+                <input
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-mono w-full rounded border border-[var(--color-edge)] bg-[var(--color-base)] px-3 py-2 text-sm focus:border-[var(--color-cyan-dim)] focus:outline-none"
+                  placeholder="demo123"
+                  aria-required
+                />
+              </Field>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-ink-mid)] select-none">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                  className="accent-[var(--color-cyan)]"
+                />
+                Remember me on this device
+              </label>
+
+              {error && (
+                <div
+                  role="alert"
+                  className="rounded border border-[var(--color-warn-dim)]/40 bg-[var(--color-warn-soft)] px-3 py-2 text-xs text-[var(--color-warn)]"
+                >
+                  {error}
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-2 mt-1">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="rounded-full bg-[var(--color-pill-dark)] px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                  className="flex-1 rounded border border-[var(--color-cyan-dim)] bg-[var(--color-cyan-soft)] px-4 py-2.5 text-sm font-medium text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/15 disabled:opacity-60"
                 >
-                  {loading ? "Signing in…" : "Sign in"}
+                  {loading ? "AUTHENTICATING…" : "SIGN IN"}
                 </button>
-              </form>
-            )}
-
-            {error && (
-              <div
-                role="alert"
-                className="mt-4 rounded-xl px-3 py-2 text-xs"
-                style={{ background: "var(--color-warn-soft)", color: "var(--color-warn-dim)" }}
-              >
-                {error}
+                <button
+                  type="button"
+                  onClick={loadDemo}
+                  disabled={loading}
+                  className="flex-1 rounded border border-[var(--color-edge)] bg-[var(--color-panel)] px-4 py-2.5 text-sm text-[var(--color-ink-mid)] hover:border-[var(--color-edge-strong)] hover:text-[var(--color-ink)]"
+                >
+                  Load demo persona
+                </button>
               </div>
-            )}
-          </div>
+            </form>
 
-          {/* Footer */}
-          <div className="mt-5 flex items-center justify-between text-[11px] text-[var(--color-ink-dim)] flex-wrap gap-2 px-2">
-            <span>Demo data only · not financial advice · all numbers illustrative</span>
-            <span>Apr 2026 macro snapshot</span>
-          </div>
+            <div className="mt-5 border-t border-[var(--color-edge)] pt-4">
+              <div className="h-tick mb-2">DEMO ACCOUNTS</div>
+              <ul className="grid grid-cols-2 gap-1.5 text-[11px] h-mono">
+                {demoUsers.map((u) => (
+                  <li
+                    key={u.username}
+                    className="flex items-center justify-between gap-1.5 rounded border border-[var(--color-edge)] bg-[var(--color-panel)] px-2 py-1.5"
+                  >
+                    <button
+                      onClick={() => {
+                        setUsername(u.username);
+                        setPassword(u.password);
+                        setError(null);
+                      }}
+                      className="text-left flex-1 hover:text-[var(--color-cyan)]"
+                    >
+                      <div>{u.username}</div>
+                      <div className="text-[10px] text-[var(--color-ink-dim)]">
+                        → {u.personaId}
+                      </div>
+                    </button>
+                    <span className="text-[var(--color-ink-faint)]">
+                      {u.password}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </TerminalPanel>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
-        {label}
-      </span>
+      <span className="h-tick">{label}</span>
       {children}
     </label>
   );
-}
-
-function compactDigits(n: number): string {
-  const abs = Math.abs(n);
-  if (abs >= 1_00_00_000)
-    return `${(abs / 1_00_00_000).toFixed(abs >= 10_00_00_000 ? 1 : 2)} Cr`;
-  if (abs >= 1_00_000) return `${(abs / 1_00_000).toFixed(abs >= 10_00_000 ? 1 : 2)} L`;
-  if (abs >= 1_000) return `${(abs / 1_000).toFixed(0)}K`;
-  return abs.toLocaleString("en-IN");
 }
