@@ -8,54 +8,83 @@ import {
   Briefcase,
   TrendingUp,
 } from "lucide-react";
+import TextPressure from "@/components/ui/TextPressure";
+import StaggeredMenu from "@/components/ui/StaggeredMenu";
+import Silk from "@/components/ui/Silk";
+import { useState } from "react";
 
 export default function Index() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const menuItems = [
+    { label: "Features", ariaLabel: "View features", link: "#" },
+    { label: "How it Works", ariaLabel: "Learn how it works", link: "#" },
+    { label: "Pricing", ariaLabel: "View pricing", link: "#" },
+    { label: "Get Started", ariaLabel: "Go to login", link: "/login" },
+  ];
+
+  const socialItems = [
+    { label: "Twitter", link: "https://twitter.com" },
+    { label: "GitHub", link: "https://github.com" },
+    { label: "LinkedIn", link: "https://linkedin.com" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F8F9FF] via-white to-[#F3F1FF] text-slate-900 font-sans flex flex-col selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen bg-gradient-to-br from-[#F8F9FF] via-white to-[#F3F1FF] text-slate-900 font-sans flex flex-col selection:bg-indigo-100 selection:text-indigo-900 relative">
+      {/* Background Effect */}
+      <div className="fixed inset-0 -z-10 opacity-20 pointer-events-none">
+        <Silk speed={3} scale={0.8} color="#2E1065" noiseIntensity={1.2} />
+      </div>
+
       {/* Navigation */}
-      <header className="max-w-7xl mx-auto w-full px-6 py-6 flex items-center justify-between">
-        <div className="text-xl font-bold text-[#1E1B4B] tracking-tight">
+      <div className="z-50">
+        <StaggeredMenu
+          position="right"
+          items={menuItems}
+          socialItems={socialItems}
+          displaySocials={true}
+          displayItemNumbering={true}
+          menuButtonColor="#1E1B4B"
+          openMenuButtonColor="#1E1B4B"
+          changeMenuColorOnOpen={true}
+          colors={["#E0E7FF", "#2E1065", "#1E1B4B"]}
+          accentColor="#911ba6"
+          isFixed={true}
+          onMenuOpen={() => setIsMenuOpen(true)}
+          onMenuClose={() => setIsMenuOpen(false)}
+        />
+      </div>
+
+      {/* Logo Placeholder */}
+      <div className="max-w-7xl mx-auto w-full px-6 py-6 flex items-center justify-between pointer-events-none">
+        <div className="text-xl font-bold text-[#1E1B4B] tracking-tight pointer-events-auto">
           Project Horizon
         </div>
-
-        <nav className="hidden md:flex items-center gap-8">
-          <Link
-            href="#"
-            className="relative text-sm font-medium text-slate-600 hover:text-[#1E1B4B] transition-colors duration-300 after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-[#2E1065] after:transition-all after:duration-300 hover:after:w-full"
-          >
-            Features
-          </Link>
-          <Link
-            href="#"
-            className="relative text-sm font-medium text-slate-600 hover:text-[#1E1B4B] transition-colors duration-300 after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-[#2E1065] after:transition-all after:duration-300 hover:after:w-full"
-          >
-            How it Works
-          </Link>
-          <Link
-            href="#"
-            className="relative text-sm font-medium text-slate-600 hover:text-[#1E1B4B] transition-colors duration-300 after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-[#2E1065] after:transition-all after:duration-300 hover:after:w-full"
-          >
-            Pricing
-          </Link>
-        </nav>
-
-        <Link
-          href="/login"
-          className="bg-[#2E1065] hover:bg-[#1E1B4B] text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-indigo-200"
-        >
-          Get Started
-        </Link>
-      </header>
+      </div>
 
       {/* Hero Section */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 pt-16 pb-24 lg:pt-24 lg:pb-32 grid lg:grid-cols-2 gap-16 lg:gap-8 items-center">
         {/* Left Column - Copy */}
         <div className="max-w-xl">
-          <h1 className="text-6xl lg:text-[5.5rem] font-bold tracking-tight text-[#111827] mb-6 leading-[1.05]">
+          <h1 className="text-6xl lg:text-[5.5rem] font-bold tracking-tight text-[#111827] mb-2 leading-[1.05]">
             Financial planning
-            <br />
-            <span className="text-[#911ba6]">for real life</span>
           </h1>
+          <div
+            style={{ position: "relative", height: "120px" }}
+            className="mb-6"
+          >
+            <TextPressure
+              text="for real life."
+              flex={true}
+              alpha={false}
+              stroke={false}
+              width={true}
+              weight={true}
+              italic={true}
+              textColor="#911ba6"
+              minFontSize={36}
+            />
+          </div>
           <p className="text-lg text-slate-600 mb-10 leading-relaxed max-w-lg">
             Navigate your financial future with the Milestone Engine. A dynamic,
             interactive simulation that adapts to your life goals, not just
@@ -80,7 +109,11 @@ export default function Index() {
         </div>
 
         {/* Right Column - Illustration */}
-        <div className="relative w-full max-w-lg mx-auto lg:ml-auto">
+        <div
+          className={`relative w-full max-w-lg mx-auto lg:ml-auto transition-all duration-500 ease-in-out ${
+            isMenuOpen ? "lg:-translate-x-32 scale-95" : "translate-x-0 scale-100"
+          }`}
+        >
           {/* Main Card */}
           <div className="bg-white rounded-2xl shadow-2xl shadow-indigo-100/50 p-8 lg:p-10 border border-slate-100 relative z-10 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_25px_60px_-12px_rgba(46,16,101,0.15)]">
             <div className="text-xs font-bold tracking-widest text-slate-500 uppercase mb-3">

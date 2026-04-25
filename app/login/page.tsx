@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/components/providers/AppProvider";
 import { demoUsers } from "@/data/users";
 import { TerminalPanel } from "@/components/ui/TerminalPanel";
+import Silk from "@/components/ui/Silk";
 
 export default function LoginPage() {
   const { login } = useApp();
@@ -45,7 +46,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-[var(--color-base)]">
+      {/* Background Effects */}
+      <div className="absolute inset-0 -z-10 opacity-10 pointer-events-none">
+        <Silk speed={2} scale={1.2} color="#22d3ee" noiseIntensity={1.5} />
+      </div>
       <div className="absolute inset-0 h-grid-bg opacity-30 pointer-events-none" />
       <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-cyan/30 to-transparent" />
 
