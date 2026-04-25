@@ -87,7 +87,10 @@ export default function LoginPage() {
         <FinanceScene />
       </div>
 
-      <div className="w-full max-w-md rounded-[24px] border border-[var(--color-edge)] bg-[var(--color-panel)] p-8 shadow-sm" style={{ position: "relative", zIndex: 5 }}>
+      <div
+        className="w-full max-w-md rounded-[24px] border border-[var(--color-edge)] bg-[var(--color-panel)] p-8 shadow-sm"
+        style={{ position: "relative", zIndex: 5 }}
+      >
         <div className="mb-8 text-center">
           <Logo className="mb-6 scale-90" />
           <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-ink)]">

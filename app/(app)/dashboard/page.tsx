@@ -43,7 +43,9 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-5">
       {/* Greeting */}
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Hello, {firstName}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Hello, {firstName}
+        </h1>
         <p className="text-sm text-[var(--color-ink)] mt-1">
           {finances.customized
             ? "Your numbers, live plan, all synced."
@@ -92,7 +94,11 @@ export default function DashboardPage() {
 
       {/* Net worth + Allocation buckets */}
       <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_1fr] gap-5">
-        <NetWorthCard persona={persona} finances={finances} livePlan={livePlan} />
+        <NetWorthCard
+          persona={persona}
+          finances={finances}
+          livePlan={livePlan}
+        />
         <AllocationCards persona={persona} />
       </section>
 
@@ -115,7 +121,8 @@ function FinancesHero({
   onEdit: () => void;
   onReset: () => void;
 }) {
-  const { monthlyIncome, monthlyExpenses, monthlySavings, customized } = finances;
+  const { monthlyIncome, monthlyExpenses, monthlySavings, customized } =
+    finances;
   const savingsRate =
     monthlyIncome > 0 ? Math.round((monthlySavings / monthlyIncome) * 100) : 0;
   const isDrawing = monthlySavings < 0;
@@ -247,18 +254,18 @@ function FinancesTile({
     tone === "warn"
       ? "var(--color-warn-dim)"
       : tone === "ok"
-      ? "var(--color-mint-dim)"
-      : "var(--color-ink)";
+        ? "var(--color-mint-dim)"
+        : "var(--color-ink)";
   return (
     <div
       className={`rounded-2xl p-4 ${
-        highlight
-          ? "bg-[var(--color-lavender-soft)]"
-          : "bg-[var(--color-grid)]"
+        highlight ? "bg-[var(--color-lavender-soft)]" : "bg-[var(--color-grid)]"
       }`}
     >
       <div className="flex items-center justify-between mb-2">
-        <div className="text-xs font-medium text-[var(--color-ink-mid)]">{label}</div>
+        <div className="text-xs font-medium text-[var(--color-ink-mid)]">
+          {label}
+        </div>
         <span
           className="grid place-items-center h-7 w-7 rounded-full bg-[var(--color-panel)] text-[var(--color-ink)]"
           aria-hidden
@@ -266,10 +273,15 @@ function FinancesTile({
           {icon}
         </span>
       </div>
-      <div className="text-3xl font-semibold tracking-tight tabular-nums" style={{ color: valueColor }}>
+      <div
+        className="text-3xl font-semibold tracking-tight tabular-nums"
+        style={{ color: valueColor }}
+      >
         ₹{compact(value)}
       </div>
-      <div className="text-[11px] text-[var(--color-ink-mid)] mt-1 leading-snug">{subtitle}</div>
+      <div className="text-[11px] text-[var(--color-ink-mid)] mt-1 leading-snug">
+        {subtitle}
+      </div>
     </div>
   );
 }
@@ -294,7 +306,8 @@ function FinancesEditor({
 
   const derivedSavings = income - expenses;
   const effectiveSavings = autoSavings ? derivedSavings : savings;
-  const savingsRate = income > 0 ? Math.round((effectiveSavings / income) * 100) : 0;
+  const savingsRate =
+    income > 0 ? Math.round((effectiveSavings / income) * 100) : 0;
 
   const isOnboarding = mode === "onboarding";
 
@@ -307,17 +320,19 @@ function FinancesEditor({
               <Sparkles className="h-3.5 w-3.5" aria-hidden />
               <strong>One-time setup.</strong>
             </span>{" "}
-            Plug in your monthly numbers and we'll wire them
-            into every screen — goal funding, projections, instrument splits. You can edit anytime
+            Plug in your monthly numbers and we'll wire them into every screen —
+            goal funding, projections, instrument splits. You can edit anytime
             from the dashboard or the sidebar's "My money".
           </div>
         )}
         <div className="text-lg font-semibold tracking-tight">
-          {isOnboarding ? "Let's start with your monthly numbers" : "Edit your monthly numbers"}
+          {isOnboarding
+            ? "Let's start with your monthly numbers"
+            : "Edit your monthly numbers"}
         </div>
         <div className="text-xs text-[var(--color-ink-mid)] mt-1 leading-relaxed">
-          We'll use these everywhere — projections, goal funding, allocation. Stays in your browser
-          only; nothing leaves your device.
+          We'll use these everywhere — projections, goal funding, allocation.
+          Stays in your browser only; nothing leaves your device.
         </div>
 
         <div className="mt-5 flex flex-col gap-4">
@@ -351,7 +366,9 @@ function FinancesEditor({
 
             {autoSavings ? (
               <div className="mt-3 flex items-baseline justify-between">
-                <span className="text-xs text-[var(--color-ink-mid)]">Going to savings</span>
+                <span className="text-xs text-[var(--color-ink-mid)]">
+                  Going to savings
+                </span>
                 <span
                   className="text-2xl font-semibold tabular-nums"
                   style={{
@@ -393,8 +410,8 @@ function FinancesEditor({
                       savingsRate >= 15
                         ? "var(--color-mint-dim)"
                         : savingsRate >= 5
-                        ? "var(--color-amber-dim)"
-                        : "var(--color-warn-dim)",
+                          ? "var(--color-amber-dim)"
+                          : "var(--color-warn-dim)",
                   }}
                 >
                   {savingsRate}%
@@ -469,16 +486,18 @@ function NumberField({
           inputMode="numeric"
           step={1000}
           min={allowNegative ? undefined : 0}
-          value={Number.isFinite(value) ? value : 0}
+          value={Number.isFinite(value) ? value : ""}
           onChange={(e) => onChange(Number(e.target.value))}
           placeholder={placeholder}
-          className={`w-full rounded-xl border placeholder:text-[var(--color-ink-faint)] placeholder:opacity-100 ${
+          className={`w-full rounded-xl text-white border placeholder:text-[var(--color-ink-faint)] placeholder:opacity-100 ${
             compactInput ? "" : "bg-[var(--color-panel)]"
-          } border-[var(--color-edge)] bg-[var(--color-panel)] pl-7 pr-3 py-2.5 text-base tabular-nums focus:border-[var(--color-cyan)] focus:outline-none`}
+          } bg-transparent border-[var(--color-edge)] pl-7 pr-3 py-2.5 text-base tabular-nums focus:border-[var(--color-cyan)] focus:outline-none`}
         />
       </div>
       {help && (
-        <span className="text-[10px] text-[var(--color-ink-mid)] leading-relaxed">{help}</span>
+        <span className="text-[10px] text-[var(--color-ink-mid)] leading-relaxed">
+          {help}
+        </span>
       )}
     </label>
   );
@@ -497,9 +516,11 @@ function PlanSummary({
   const monthly = finances.monthlySavings;
   const yearsLeft = persona.retirementAge - persona.age;
 
-  const shorts = livePlan.milestones.filter((m) => m.statusLive === "SHORTFALL");
+  const shorts = livePlan.milestones.filter(
+    (m) => m.statusLive === "SHORTFALL",
+  );
   const onTrack = livePlan.milestones.filter(
-    (m) => m.statusLive === "ON_TRACK" || m.statusLive === "SURPLUS"
+    (m) => m.statusLive === "ON_TRACK" || m.statusLive === "SURPLUS",
   );
 
   let headline: string;
@@ -514,7 +535,9 @@ function PlanSummary({
         : `Drawing ₹${compact(Math.abs(monthly))}/month. Your corpus supports the spend through your projection horizon.`;
   } else {
     tone = "warn";
-    const worst = [...shorts].sort((a, b) => b.shortfallLive - a.shortfallLive)[0];
+    const worst = [...shorts].sort(
+      (a, b) => b.shortfallLive - a.shortfallLive,
+    )[0];
     headline = `${shorts.length} out of ${livePlan.milestones.length} goals short this month · ₹${compact(livePlan.aggregateShortfall)} gap.`;
     detail = `Biggest gap: ${worst.name} at age ${worst.age} is ₹${compact(worst.shortfallLive)} short. Try saving more, or push the goal later.`;
   }
@@ -532,7 +555,8 @@ function PlanSummary({
       <div
         className="grid place-items-center h-12 w-12 rounded-2xl text-white shrink-0"
         style={{
-          background: tone === "ok" ? "var(--color-mint-dim)" : "var(--color-warn-dim)",
+          background:
+            tone === "ok" ? "var(--color-mint-dim)" : "var(--color-warn-dim)",
         }}
       >
         {tone === "ok" ? <CheckIcon /> : <AlertIcon />}
@@ -541,14 +565,20 @@ function PlanSummary({
         <div className="text-[1rem] md:text-lg font-semibold tracking-tight leading-snug text-[var(--color-ink)]">
           {headline}
         </div>
-        <div className="text-sm text-[var(--color-ink)] mt-1 leading-relaxed">{detail}</div>
+        <div className="text-sm text-[var(--color-ink)] mt-1 leading-relaxed">
+          {detail}
+        </div>
         <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] text-[var(--color-ink)]">
           <span>
-            <span className="text-[var(--color-mint-dim)] font-semibold">●</span>{" "}
+            <span className="text-[var(--color-mint-dim)] font-semibold">
+              ●
+            </span>{" "}
             {onTrack.length} on track
           </span>
           <span>
-            <span className="text-[var(--color-warn-dim)] font-semibold">●</span>{" "}
+            <span className="text-[var(--color-warn-dim)] font-semibold">
+              ●
+            </span>{" "}
             {shorts.length} short
           </span>
           <span>·</span>
@@ -591,14 +621,30 @@ function NetWorthCard({
       </div>
 
       <div className="mt-5 grid grid-cols-4 gap-3">
-        <ActionButton label="Timeline" href="/timeline" icon={<TimelineIcon />} />
-        <ActionButton label="Try changes" href="/timeline" icon={<RefreshIcon />} />
-        <ActionButton label="Allocation" href="/allocation" icon={<DonutIcon />} />
+        <ActionButton
+          label="Timeline"
+          href="/timeline"
+          icon={<TimelineIcon />}
+        />
+        <ActionButton
+          label="Try changes"
+          href="/timeline"
+          icon={<RefreshIcon />}
+        />
+        <ActionButton
+          label="Allocation"
+          href="/allocation"
+          icon={<DonutIcon />}
+        />
         <ActionButton label="Tax" href="/tax" icon={<ReceiptIcon />} />
       </div>
 
       <div className="mt-5 grid grid-cols-3 gap-3 text-center">
-        <Stat label="Plan health" value={`${persona.planConfidence}%`} hint="confidence" />
+        <Stat
+          label="Plan health"
+          value={`${persona.planConfidence}%`}
+          hint="confidence"
+        />
         <Stat
           label="Risk score"
           value={`${persona.riskScore}/100`}
@@ -606,9 +652,15 @@ function NetWorthCard({
         />
         <Stat
           label="Funding gap"
-          value={livePlan.aggregateShortfall === 0 ? "₹0" : `₹${compact(livePlan.aggregateShortfall)}`}
+          value={
+            livePlan.aggregateShortfall === 0
+              ? "₹0"
+              : `₹${compact(livePlan.aggregateShortfall)}`
+          }
           tone={livePlan.aggregateShortfall === 0 ? "ok" : "warn"}
-          hint={livePlan.aggregateShortfall === 0 ? "all goals" : "across goals"}
+          hint={
+            livePlan.aggregateShortfall === 0 ? "all goals" : "across goals"
+          }
         />
       </div>
     </div>
@@ -630,17 +682,22 @@ function Stat({
     tone === "warn"
       ? "var(--color-warn-dim)"
       : tone === "ok"
-      ? "var(--color-mint-dim)"
-      : "var(--color-ink)";
+        ? "var(--color-mint-dim)"
+        : "var(--color-ink)";
   return (
     <div className="rounded-2xl bg-[color-mix(in_srgb,var(--color-panel)_72%,transparent)] border border-[var(--color-edge)] px-3 py-2">
       <div className="text-[10px] uppercase tracking-wider text-[var(--color-ink-dim)]">
         {label}
       </div>
-      <div className="text-sm font-semibold mt-0.5 tabular-nums" style={{ color }}>
+      <div
+        className="text-sm font-semibold mt-0.5 tabular-nums"
+        style={{ color }}
+      >
         {value}
       </div>
-      {hint && <div className="text-[10px] text-[var(--color-ink-dim)]">{hint}</div>}
+      {hint && (
+        <div className="text-[10px] text-[var(--color-ink-dim)]">{hint}</div>
+      )}
     </div>
   );
 }
@@ -663,7 +720,11 @@ function ActionButton({
 }
 
 /* -------------------- Allocation buckets -------------------- */
-function AllocationCards({ persona }: { persona: ReturnType<typeof useApp>["persona"] }) {
+function AllocationCards({
+  persona,
+}: {
+  persona: ReturnType<typeof useApp>["persona"];
+}) {
   const buckets = [
     {
       label: "Equity",
@@ -733,11 +794,15 @@ function BucketCard({
       href="/allocation"
       title={explain}
       className={`shrink-0 snap-start w-[200px] rounded-3xl p-5 flex flex-col justify-between min-h-[180px] transition-shadow hover:shadow-md ${
-        isLavender ? "h-card-lavender" : "bg-[var(--color-panel)] border border-[var(--color-edge)]"
+        isLavender
+          ? "h-card-lavender"
+          : "bg-[var(--color-panel)] border border-[var(--color-edge)]"
       }`}
     >
       <div className="flex items-start justify-between">
-        <div className="text-xs font-medium text-[var(--color-ink-mid)]">{sub}</div>
+        <div className="text-xs font-medium text-[var(--color-ink-mid)]">
+          {sub}
+        </div>
         <span className="text-[var(--color-ink-mid)]">
           <DotsIcon />
         </span>
@@ -765,7 +830,10 @@ function Instruments({
   customized: boolean;
 }) {
   const items = livePlan.scaledInstruments.slice(0, 5);
-  const total = livePlan.scaledInstruments.reduce((acc, i) => acc + i.monthly, 0);
+  const total = livePlan.scaledInstruments.reduce(
+    (acc, i) => acc + i.monthly,
+    0,
+  );
   const colors: Record<string, string> = {
     Equity: "var(--color-equity)",
     Debt: "var(--color-debt)",
@@ -777,13 +845,15 @@ function Instruments({
     <div className="h-panel p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <div className="text-2xl font-semibold tracking-tight">What you're buying</div>
+          <div className="text-2xl font-semibold tracking-tight">
+            What you're buying
+          </div>
           <div className="text-xs text-[var(--color-ink-dim)] mt-0.5">
             {total > 0
               ? `Recommended split of your ₹${compact(total)}/month savings`
               : customized
-              ? "You're not adding to investments this month."
-              : "Recommended monthly investments"}
+                ? "You're not adding to investments this month."
+                : "Recommended monthly investments"}
           </div>
         </div>
         <Link
@@ -803,7 +873,9 @@ function Instruments({
           >
             <span
               className="grid place-items-center h-11 w-11 rounded-full text-sm font-semibold text-white shrink-0"
-              style={{ background: colors[inst.category] ?? "var(--color-liquid)" }}
+              style={{
+                background: colors[inst.category] ?? "var(--color-liquid)",
+              }}
             >
               {inst.category.charAt(0)}
             </span>
@@ -828,13 +900,17 @@ function Instruments({
 
 /* -------------------- Goals snapshot -------------------- */
 function MilestoneSnapshot({ livePlan }: { livePlan: LivePlan }) {
-  const sorted = [...livePlan.milestones].sort((a, b) => a.age - b.age).slice(0, 5);
+  const sorted = [...livePlan.milestones]
+    .sort((a, b) => a.age - b.age)
+    .slice(0, 5);
 
   return (
     <div className="h-panel p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <div className="text-2xl font-semibold tracking-tight">Your goals</div>
+          <div className="text-2xl font-semibold tracking-tight">
+            Your goals
+          </div>
           <div className="text-xs text-[var(--color-ink-dim)] mt-0.5">
             Funding live-computed from your savings
           </div>
@@ -851,10 +927,15 @@ function MilestoneSnapshot({ livePlan }: { livePlan: LivePlan }) {
         {sorted.map((m) => {
           const pct = Math.min(
             100,
-            Math.round((m.projectedBalanceLive / Math.max(1, m.inflatedCost)) * 100)
+            Math.round(
+              (m.projectedBalanceLive / Math.max(1, m.inflatedCost)) * 100,
+            ),
           );
-          const onTrack = m.statusLive === "ON_TRACK" || m.statusLive === "SURPLUS";
-          const tone = onTrack ? "var(--color-mint-dim)" : "var(--color-warn-dim)";
+          const onTrack =
+            m.statusLive === "ON_TRACK" || m.statusLive === "SURPLUS";
+          const tone = onTrack
+            ? "var(--color-mint-dim)"
+            : "var(--color-warn-dim)";
           return (
             <li key={m.id} className="rounded-2xl bg-[var(--color-grid)] p-4">
               <div className="flex items-center justify-between gap-3">
@@ -864,8 +945,13 @@ function MilestoneSnapshot({ livePlan }: { livePlan: LivePlan }) {
                     · age {m.age}
                   </span>
                 </div>
-                <div className="text-xs font-semibold tabular-nums" style={{ color: tone }}>
-                  {onTrack ? `${Math.min(pct, 999)}% funded` : `−₹${compact(m.shortfallLive)}`}
+                <div
+                  className="text-xs font-semibold tabular-nums"
+                  style={{ color: tone }}
+                >
+                  {onTrack
+                    ? `${Math.min(pct, 999)}% funded`
+                    : `−₹${compact(m.shortfallLive)}`}
                 </div>
               </div>
               <div className="mt-2 h-2 rounded-full bg-[var(--color-panel)] overflow-hidden">
@@ -896,14 +982,32 @@ function compact(n: number): string {
 
 function CheckIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="m5 12 5 5L20 7" />
     </svg>
   );
 }
 function AlertIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M12 9v4M12 17h.01" />
       <circle cx="12" cy="12" r="9" />
     </svg>
@@ -911,7 +1015,15 @@ function AlertIcon() {
 }
 function TimelineIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
       <path d="M3 12h18" />
       <circle cx="7" cy="12" r="2" fill="currentColor" />
       <circle cx="13" cy="12" r="2" fill="currentColor" />
@@ -921,14 +1033,34 @@ function TimelineIcon() {
 }
 function RefreshIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M21 4v4h-4" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" /><path d="M3 20v-4h4" />
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+      <path d="M21 4v4h-4" />
+      <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+      <path d="M3 20v-4h4" />
     </svg>
   );
 }
 function DonutIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
       <circle cx="12" cy="12" r="8" />
       <circle cx="12" cy="12" r="3" />
     </svg>
@@ -936,7 +1068,16 @@ function DonutIcon() {
 }
 function ReceiptIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M5 3v18l2-1.5L9 21l2-1.5L13 21l2-1.5L17 21l2-1.5V3" />
       <path d="M8 8h8M8 12h8M8 16h5" />
     </svg>
@@ -945,13 +1086,24 @@ function ReceiptIcon() {
 function DotsIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-      <circle cx="12" cy="6" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="18" r="1.6" />
+      <circle cx="12" cy="6" r="1.6" />
+      <circle cx="12" cy="12" r="1.6" />
+      <circle cx="12" cy="18" r="1.6" />
     </svg>
   );
 }
 function PencilIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M12 20h9" />
       <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
     </svg>
@@ -959,7 +1111,16 @@ function PencilIcon() {
 }
 function ArrowDownIn() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M12 5v14" />
       <path d="m6 13 6 6 6-6" />
     </svg>
@@ -967,7 +1128,16 @@ function ArrowDownIn() {
 }
 function ArrowUpOut() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M12 19V5" />
       <path d="m6 11 6-6 6 6" />
     </svg>
@@ -975,7 +1145,16 @@ function ArrowUpOut() {
 }
 function PiggyIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M19 8a3 3 0 0 0-3 3v.5h-.5a5 5 0 0 0-9.5 2.5v3a3 3 0 0 0 1 2.2V21h3v-1.5h5V21h3v-1.8A5 5 0 0 0 21 14v-3a3 3 0 0 0-2-2Z" />
       <circle cx="12" cy="13" r="0.6" fill="currentColor" />
     </svg>

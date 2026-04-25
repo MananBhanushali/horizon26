@@ -112,7 +112,9 @@ export default function Index() {
         {/* Right Column - Illustration */}
         <div
           className={`relative w-full max-w-lg mx-auto lg:ml-auto transition-all duration-500 ease-in-out ${
-            isMenuOpen ? "lg:-translate-x-32 scale-95" : "translate-x-0 scale-100"
+            isMenuOpen
+              ? "lg:-translate-x-32 scale-95"
+              : "translate-x-0 scale-100"
           }`}
         >
           {/* Main Card */}
