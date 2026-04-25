@@ -4,16 +4,33 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useApp, type UserFinances } from "@/components/providers/AppProvider";
+import type { LivePlan } from "@/lib/livePlan";
 import { formatINR } from "@/lib/format";
 
 export default function DashboardPage() {
-  const { persona, finances, updateFinances, resetFinances } = useApp();
+  const {
+    persona,
+    finances,
+    updateFinances,
+    resetFinances,
+    livePlan,
+    needsFinancesOnboarding,
+    markFinancesOnboarded,
+  } = useApp();
   const firstName = persona.name.split(" ")[0];
   const [editingFinances, setEditingFinances] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const params = useSearchParams();
   const router = useRouter();
 
-  // ?edit=money auto-opens the editor (sidebar deep link)
+  // First-visit onboarding: open the editor once, mark done whether they save or skip.
+  useEffect(() => {
+    if (needsFinancesOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, [needsFinancesOnboarding]);
+
+  // ?edit=money auto-opens the editor (sidebar deep link / "edit" actions)
   useEffect(() => {
     if (params.get("edit") === "money") {
       setEditingFinances(true);
@@ -27,7 +44,9 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Hello, {firstName}</h1>
         <p className="text-sm text-[var(--color-ink-mid)] mt-1">
-          Tell us how money flows in and out each month — everything else updates from there.
+          {finances.customized
+            ? "Your numbers, live plan, all synced."
+            : "Tell us how money flows in and out each month — everything else updates from there."}
         </p>
       </div>
 
@@ -40,6 +59,7 @@ export default function DashboardPage() {
 
       {editingFinances && (
         <FinancesEditor
+          mode="edit"
           initial={finances}
           onCancel={() => setEditingFinances(false)}
           onSave={(next) => {
@@ -49,19 +69,36 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Plan summary in plain English */}
-      <PlanSummary persona={persona} finances={finances} />
+      {showOnboarding && !editingFinances && (
+        <FinancesEditor
+          mode="onboarding"
+          initial={finances}
+          onCancel={() => {
+            // Skip: mark prompted so we don't ask again.
+            markFinancesOnboarded();
+            setShowOnboarding(false);
+          }}
+          onSave={(next) => {
+            updateFinances(next);
+            markFinancesOnboarded();
+            setShowOnboarding(false);
+          }}
+        />
+      )}
+
+      {/* Plan summary — uses live plan, recomputed from finances */}
+      <PlanSummary persona={persona} finances={finances} livePlan={livePlan} />
 
       {/* Net worth + Allocation buckets */}
       <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_1fr] gap-5">
-        <NetWorthCard persona={persona} finances={finances} />
+        <NetWorthCard persona={persona} finances={finances} livePlan={livePlan} />
         <AllocationCards persona={persona} />
       </section>
 
-      {/* Goals + Instruments */}
+      {/* Goals + Instruments — both driven by live plan */}
       <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_1fr] gap-5">
-        <MilestoneSnapshot persona={persona} />
-        <Instruments persona={persona} />
+        <MilestoneSnapshot livePlan={livePlan} />
+        <Instruments livePlan={livePlan} customized={finances.customized} />
       </section>
     </div>
   );
@@ -241,10 +278,12 @@ function FinancesEditor({
   initial,
   onCancel,
   onSave,
+  mode = "edit",
 }: {
   initial: UserFinances;
   onCancel: () => void;
   onSave: (next: Partial<UserFinances>) => void;
+  mode?: "onboarding" | "edit";
 }) {
   const [income, setIncome] = useState(initial.monthlyIncome);
   const [expenses, setExpenses] = useState(initial.monthlyExpenses);
@@ -256,10 +295,21 @@ function FinancesEditor({
   const effectiveSavings = autoSavings ? derivedSavings : savings;
   const savingsRate = income > 0 ? Math.round((effectiveSavings / income) * 100) : 0;
 
+  const isOnboarding = mode === "onboarding";
+
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 backdrop-blur-sm p-4">
-      <div className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-xl max-h-[90vh] overflow-auto">
-        <div className="text-lg font-semibold tracking-tight">Enter your monthly numbers</div>
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-xl max-h-[92vh] overflow-auto">
+        {isOnboarding && (
+          <div className="mb-4 rounded-2xl bg-[var(--color-lavender-soft)] px-4 py-3 text-xs leading-relaxed text-[var(--color-ink)]">
+            👋 <strong>One-time setup.</strong> Plug in your monthly numbers and we'll wire them
+            into every screen — goal funding, projections, instrument splits. You can edit anytime
+            from the dashboard or the sidebar's "My money".
+          </div>
+        )}
+        <div className="text-lg font-semibold tracking-tight">
+          {isOnboarding ? "Let's start with your monthly numbers" : "Edit your monthly numbers"}
+        </div>
         <div className="text-xs text-[var(--color-ink-dim)] mt-1 leading-relaxed">
           We'll use these everywhere — projections, goal funding, allocation. Stays in your browser
           only; nothing leaves your device.
@@ -362,7 +412,7 @@ function FinancesEditor({
             onClick={onCancel}
             className="rounded-full bg-[var(--color-grid)] px-4 py-2 text-xs font-medium text-[var(--color-ink-mid)]"
           >
-            Cancel
+            {isOnboarding ? "Use sample numbers for now" : "Cancel"}
           </button>
           <button
             onClick={() =>
@@ -375,7 +425,7 @@ function FinancesEditor({
             }
             className="rounded-full bg-[var(--color-pill-dark)] px-5 py-2 text-xs font-medium text-white"
           >
-            Save my numbers
+            {isOnboarding ? "Save and continue" : "Save my numbers"}
           </button>
         </div>
       </div>
@@ -433,18 +483,18 @@ function NumberField({
 function PlanSummary({
   persona,
   finances,
+  livePlan,
 }: {
   persona: ReturnType<typeof useApp>["persona"];
   finances: UserFinances;
+  livePlan: LivePlan;
 }) {
   const monthly = finances.monthlySavings;
-  const finalCorpus =
-    persona.projection[persona.projection.length - 1]?.base ?? persona.netWorth;
   const yearsLeft = persona.retirementAge - persona.age;
 
-  const shorts = persona.milestones.filter((m) => m.status === "SHORTFALL");
-  const onTrack = persona.milestones.filter(
-    (m) => m.status === "ON_TRACK" || m.status === "SURPLUS"
+  const shorts = livePlan.milestones.filter((m) => m.statusLive === "SHORTFALL");
+  const onTrack = livePlan.milestones.filter(
+    (m) => m.statusLive === "ON_TRACK" || m.statusLive === "SURPLUS"
   );
 
   let headline: string;
@@ -452,16 +502,16 @@ function PlanSummary({
   let tone: "ok" | "warn";
   if (shorts.length === 0) {
     tone = "ok";
-    headline = `On track. All ${persona.milestones.length} goals look fundable.`;
+    headline = `On track. All ${livePlan.milestones.length} goals look fundable.`;
     detail =
       monthly >= 0
-        ? `Keep saving ₹${compact(monthly)}/month and by age ${persona.retirementAge} you'll have around ₹${compact(finalCorpus)}.`
+        ? `Keep saving ₹${compact(monthly)}/month and by age ${persona.retirementAge} you'll have around ₹${compact(livePlan.finalCorpus)}.`
         : `Drawing ₹${compact(Math.abs(monthly))}/month. Your corpus supports the spend through your projection horizon.`;
   } else {
     tone = "warn";
-    const worst = [...shorts].sort((a, b) => b.shortfall - a.shortfall)[0];
-    headline = `${shorts.length} of ${persona.milestones.length} goals are short by ₹${compact(persona.aggregateShortfall)}.`;
-    detail = `Biggest gap: ${worst.name} at age ${worst.age} is ₹${compact(worst.shortfall)} short. ${worst.remediation}`;
+    const worst = [...shorts].sort((a, b) => b.shortfallLive - a.shortfallLive)[0];
+    headline = `${shorts.length} of ${livePlan.milestones.length} goals are short by ₹${compact(livePlan.aggregateShortfall)}.`;
+    detail = `Biggest gap: ${worst.name} at age ${worst.age} is ₹${compact(worst.shortfallLive)} short. Try saving more, or push the goal later.`;
   }
 
   return (
@@ -514,9 +564,11 @@ function PlanSummary({
 function NetWorthCard({
   persona,
   finances,
+  livePlan,
 }: {
   persona: ReturnType<typeof useApp>["persona"];
   finances: UserFinances;
+  livePlan: LivePlan;
 }) {
   const monthly = finances.monthlySavings;
   return (
@@ -549,9 +601,9 @@ function NetWorthCard({
         />
         <Stat
           label="Funding gap"
-          value={persona.aggregateShortfall === 0 ? "₹0" : `₹${compact(persona.aggregateShortfall)}`}
-          tone={persona.aggregateShortfall === 0 ? "ok" : "warn"}
-          hint={persona.aggregateShortfall === 0 ? "all goals" : "across goals"}
+          value={livePlan.aggregateShortfall === 0 ? "₹0" : `₹${compact(livePlan.aggregateShortfall)}`}
+          tone={livePlan.aggregateShortfall === 0 ? "ok" : "warn"}
+          hint={livePlan.aggregateShortfall === 0 ? "all goals" : "across goals"}
         />
       </div>
     </div>
@@ -700,8 +752,15 @@ function BucketCard({
 }
 
 /* -------------------- Instruments -------------------- */
-function Instruments({ persona }: { persona: ReturnType<typeof useApp>["persona"] }) {
-  const items = persona.instruments.slice(0, 5);
+function Instruments({
+  livePlan,
+  customized,
+}: {
+  livePlan: LivePlan;
+  customized: boolean;
+}) {
+  const items = livePlan.scaledInstruments.slice(0, 5);
+  const total = livePlan.scaledInstruments.reduce((acc, i) => acc + i.monthly, 0);
   const colors: Record<string, string> = {
     Equity: "#a3aef5",
     Debt: "#34c08a",
@@ -715,7 +774,11 @@ function Instruments({ persona }: { persona: ReturnType<typeof useApp>["persona"
         <div>
           <div className="text-2xl font-semibold tracking-tight">What you're buying</div>
           <div className="text-xs text-[var(--color-ink-dim)] mt-0.5">
-            Recommended monthly investments
+            {total > 0
+              ? `Recommended split of your ₹${compact(total)}/month savings`
+              : customized
+              ? "You're not adding to investments this month."
+              : "Recommended monthly investments"}
           </div>
         </div>
         <Link
@@ -759,8 +822,8 @@ function Instruments({ persona }: { persona: ReturnType<typeof useApp>["persona"
 }
 
 /* -------------------- Goals snapshot -------------------- */
-function MilestoneSnapshot({ persona }: { persona: ReturnType<typeof useApp>["persona"] }) {
-  const sorted = [...persona.milestones].sort((a, b) => a.age - b.age).slice(0, 5);
+function MilestoneSnapshot({ livePlan }: { livePlan: LivePlan }) {
+  const sorted = [...livePlan.milestones].sort((a, b) => a.age - b.age).slice(0, 5);
 
   return (
     <div className="h-panel p-6">
@@ -768,7 +831,7 @@ function MilestoneSnapshot({ persona }: { persona: ReturnType<typeof useApp>["pe
         <div>
           <div className="text-2xl font-semibold tracking-tight">Your goals</div>
           <div className="text-xs text-[var(--color-ink-dim)] mt-0.5">
-            Will the math add up when each one hits?
+            Funding live-computed from your savings
           </div>
         </div>
         <Link
@@ -783,9 +846,9 @@ function MilestoneSnapshot({ persona }: { persona: ReturnType<typeof useApp>["pe
         {sorted.map((m) => {
           const pct = Math.min(
             100,
-            Math.round((m.projectedBalance / Math.max(1, m.inflatedCost)) * 100)
+            Math.round((m.projectedBalanceLive / Math.max(1, m.inflatedCost)) * 100)
           );
-          const onTrack = m.status === "ON_TRACK" || m.status === "SURPLUS";
+          const onTrack = m.statusLive === "ON_TRACK" || m.statusLive === "SURPLUS";
           const tone = onTrack ? "var(--color-mint-dim)" : "var(--color-warn-dim)";
           return (
             <li key={m.id} className="rounded-2xl bg-[var(--color-grid)] p-4">
@@ -797,7 +860,7 @@ function MilestoneSnapshot({ persona }: { persona: ReturnType<typeof useApp>["pe
                   </span>
                 </div>
                 <div className="text-xs font-semibold tabular-nums" style={{ color: tone }}>
-                  {onTrack ? `${Math.min(pct, 999)}% funded` : `−₹${compact(m.shortfall)}`}
+                  {onTrack ? `${Math.min(pct, 999)}% funded` : `−₹${compact(m.shortfallLive)}`}
                 </div>
               </div>
               <div className="mt-2 h-2 rounded-full bg-white overflow-hidden">
@@ -811,7 +874,7 @@ function MilestoneSnapshot({ persona }: { persona: ReturnType<typeof useApp>["pe
               </div>
               <div className="mt-2 flex items-center justify-between text-[11px] text-[var(--color-ink-dim)]">
                 <span>Cost when due: ₹{compact(m.inflatedCost)}</span>
-                <span>Projected: ₹{compact(m.projectedBalance)}</span>
+                <span>Projected: ₹{compact(m.projectedBalanceLive)}</span>
               </div>
             </li>
           );

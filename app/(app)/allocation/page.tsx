@@ -9,8 +9,8 @@ import { PageHeader } from "@/components/PageHeader";
 import { formatINR, formatPercent } from "@/lib/format";
 
 export default function AllocationPage() {
-  const { persona } = useApp();
-  const monthlySIP = Math.max(0, persona.monthlyContribution);
+  const { persona, finances } = useApp();
+  const monthlySIP = Math.max(0, finances.monthlySavings);
 
   const buckets: { label: string; key: keyof typeof allocationPalette }[] = [
     { label: "Equity", key: "equity" },

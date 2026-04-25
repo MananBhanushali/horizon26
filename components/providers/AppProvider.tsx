@@ -4,11 +4,13 @@ import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, 
 import { useRouter, usePathname } from "next/navigation";
 import { personaById, personas } from "@/data/personas";
 import { demoUsers } from "@/data/users";
+import { deriveLivePlan, type LivePlan } from "@/lib/livePlan";
 import type { Persona } from "@/lib/types";
 
 const SESSION_KEY = "v1.horizon26.session";
 const SETTINGS_KEY = "v1.horizon26.settings";
 const FINANCES_KEY = "v1.horizon26.finances"; // suffix: .{username}.{personaId}
+const ONBOARDED_KEY = "v1.horizon26.onboarded"; // suffix: .{username}
 
 type Session = { username: string; personaId: Persona["id"]; remember: boolean } | null;
 
@@ -59,6 +61,11 @@ type AppCtx = {
   finances: UserFinances;
   updateFinances: (patch: Partial<UserFinances>) => void;
   resetFinances: () => void;
+  /** Derived plan: projection + per-goal funding + scaled instruments, all from `finances`. */
+  livePlan: LivePlan;
+  /** True until the user has acknowledged the one-time finances prompt (saved or skipped). */
+  needsFinancesOnboarding: boolean;
+  markFinancesOnboarded: () => void;
 };
 
 const Ctx = createContext<AppCtx | null>(null);
@@ -71,6 +78,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [hydrated, setHydrated] = useState(false);
   const [financesByKey, setFinancesByKey] = useState<Record<string, UserFinances>>({});
+  const [onboardedUsers, setOnboardedUsers] = useState<Record<string, boolean>>({});
 
   const persistSession = useCallback((next: NonNullable<Session>) => {
     const raw = JSON.stringify(next);
@@ -97,17 +105,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const sraw = localStorage.getItem(SETTINGS_KEY);
       if (sraw) setSettings({ ...defaultSettings, ...JSON.parse(sraw) });
 
-      // Hydrate all finance entries
-      const map: Record<string, UserFinances> = {};
+      // Hydrate all finance entries + onboarded flags
+      const finMap: Record<string, UserFinances> = {};
+      const onboardedMap: Record<string, boolean> = {};
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
-        if (k && k.startsWith(FINANCES_KEY + ".")) {
+        if (!k) continue;
+        if (k.startsWith(FINANCES_KEY + ".")) {
           try {
-            map[k] = JSON.parse(localStorage.getItem(k) ?? "");
+            finMap[k] = JSON.parse(localStorage.getItem(k) ?? "");
           } catch {}
+        } else if (k.startsWith(ONBOARDED_KEY + ".")) {
+          onboardedMap[k] = localStorage.getItem(k) === "1";
         }
       }
-      setFinancesByKey(map);
+      setFinancesByKey(finMap);
+      setOnboardedUsers(onboardedMap);
     } catch {
       // ignore
     } finally {
@@ -210,6 +223,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, [finKey]);
 
+  // One-time onboarding: keyed by username so each demo profile only asks once.
+  const onboardKey = `${ONBOARDED_KEY}.${session?.username ?? "anon"}`;
+  const needsFinancesOnboarding =
+    !!session && !onboardedUsers[onboardKey] && !finances.customized;
+
+  const markFinancesOnboarded = useCallback(() => {
+    setOnboardedUsers((m) => ({ ...m, [onboardKey]: true }));
+    try {
+      localStorage.setItem(onboardKey, "1");
+    } catch {}
+  }, [onboardKey]);
+
+  // Derived live plan from the user's actual numbers
+  const livePlan = useMemo(() => deriveLivePlan(persona, finances), [persona, finances]);
+
   const value: AppCtx = {
     session,
     login,
@@ -224,6 +252,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     finances,
     updateFinances,
     resetFinances,
+    livePlan,
+    needsFinancesOnboarding,
+    markFinancesOnboarded,
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

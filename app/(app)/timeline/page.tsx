@@ -124,6 +124,30 @@ export default function TimelinePage() {
     [startAge, endAge, persona.netWorth, monthlySIP, baseReturn, inflation, milestones]
   );
 
+  // BASELINE projection — the user's saved finances + persona return + persona milestones.
+  // Drawn as a faint dashed reference so the live curve visibly diverges when sliders move.
+  const baselineProjection = useMemo<ProjectionPoint[]>(
+    () =>
+      buildProjection({
+        startAge,
+        endAge,
+        startBalance: persona.netWorth,
+        monthlySIP: finances.monthlySavings,
+        baseReturn: persona.preTaxReturn,
+        bullDelta: 2.5,
+        bearDelta: 3.0,
+        inflation: 0.055,
+        milestoneDrawdowns: persona.milestones.map((m) => ({
+          age: m.age,
+          nominal: m.nominalCost,
+          inflation: 0.055,
+        })),
+      }),
+    [startAge, endAge, persona, finances.monthlySavings]
+  );
+
+  const baselineFinal = baselineProjection[baselineProjection.length - 1]?.base ?? 0;
+
   const decorated = useMemo(() => {
     return milestones
       .slice()
@@ -282,8 +306,38 @@ export default function TimelinePage() {
       {/* Chart + sliders */}
       <section className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
         <div className="h-panel p-5">
+          {/* Live end-corpus headline — animates as sliders move so changes are visible */}
+          <div className="flex items-end justify-between gap-3 flex-wrap mb-3">
+            <div>
+              <div className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
+                Likely corpus at age {endAge}
+              </div>
+              <div className="text-3xl font-semibold tracking-tight tabular-nums transition-colors">
+                ₹{compact(finalCorpus)}
+              </div>
+              {Math.abs(finalCorpus - baselineFinal) > 100 && (
+                <div
+                  className="text-xs font-medium mt-0.5"
+                  style={{
+                    color:
+                      finalCorpus >= baselineFinal
+                        ? "var(--color-mint-dim)"
+                        : "var(--color-warn-dim)",
+                  }}
+                >
+                  {finalCorpus >= baselineFinal ? "▲" : "▼"} ₹
+                  {compact(Math.abs(finalCorpus - baselineFinal))} vs your baseline
+                </div>
+              )}
+            </div>
+            <div className="text-[11px] text-[var(--color-ink-dim)] flex items-center gap-2">
+              <span className="inline-block w-3 h-[1.5px] bg-[var(--color-ink-faint)] border-t border-dashed" />
+              dashed line = your baseline
+            </div>
+          </div>
           <InteractiveTimeline
             projection={projection}
+            baselineProjection={baselineProjection}
             milestones={decorated}
             startAge={startAge}
             endAge={endAge}
@@ -563,6 +617,7 @@ const PAD = { l: 56, r: 16, t: 18, b: 32 };
 
 function InteractiveTimeline({
   projection,
+  baselineProjection,
   milestones,
   startAge,
   endAge,
@@ -571,6 +626,7 @@ function InteractiveTimeline({
   onMilestoneClick,
 }: {
   projection: ProjectionPoint[];
+  baselineProjection: ProjectionPoint[];
   milestones: (EditableMilestone & {
     inflated: number;
     projected: number;
@@ -593,9 +649,20 @@ function InteractiveTimeline({
     [projection, visibleEnd]
   );
 
+  const filteredBaseline = useMemo(
+    () => baselineProjection.filter((p) => p.age <= visibleEnd),
+    [baselineProjection, visibleEnd]
+  );
+
   const minAge = filtered[0]?.age ?? startAge;
   const maxAge = filtered[filtered.length - 1]?.age ?? visibleEnd;
-  const allValues = filtered.flatMap((p) => [p.bull, p.base, p.bear]);
+  // Y-axis anchored to MAX of (live, baseline). When user increases SIP, the live curve
+  // grows above the dashed baseline and the user can SEE the change instead of the chart
+  // silently auto-rescaling so both look identical.
+  const allValues = [
+    ...filtered.flatMap((p) => [p.bull, p.base, p.bear]),
+    ...filteredBaseline.flatMap((p) => [p.bull, p.base, p.bear]),
+  ];
   const maxV = Math.max(...allValues, 1) * 1.05;
   const minV = 0;
 
@@ -607,8 +674,8 @@ function InteractiveTimeline({
   const y = (v: number) =>
     PAD.t + chartH - ((v - minV) / (maxV - minV || 1)) * chartH;
 
-  const linePath = (key: "base" | "bull" | "bear") =>
-    filtered
+  const linePath = (key: "base" | "bull" | "bear", points = filtered) =>
+    points
       .map((p, i) => `${i === 0 ? "M" : "L"} ${x(p.age).toFixed(1)} ${y(p[key]).toFixed(1)}`)
       .join(" ");
 
@@ -720,9 +787,20 @@ function InteractiveTimeline({
 
         <path d={bandPath()} fill="var(--color-lavender)" opacity={0.35} />
 
-        <path d={linePath("bull")} fill="none" stroke="var(--color-mint-dim)" strokeWidth={1.2} opacity={0.7} />
-        <path d={linePath("bear")} fill="none" stroke="var(--color-warn-dim)" strokeWidth={1.2} opacity={0.7} />
-        <path d={linePath("base")} fill="none" stroke="var(--color-pill-dark)" strokeWidth={2} />
+        {/* BASELINE (dashed reference) — drawn first, behind the live curves */}
+        <path
+          d={linePath("base", filteredBaseline)}
+          fill="none"
+          stroke="var(--color-ink-faint)"
+          strokeWidth={1.5}
+          strokeDasharray="5 4"
+          opacity={0.85}
+        />
+
+        {/* LIVE projection curves */}
+        <path d={linePath("bull")} fill="none" stroke="var(--color-mint-dim)" strokeWidth={1.4} opacity={0.7} />
+        <path d={linePath("bear")} fill="none" stroke="var(--color-warn-dim)" strokeWidth={1.4} opacity={0.7} />
+        <path d={linePath("base")} fill="none" stroke="var(--color-pill-dark)" strokeWidth={2.5} />
 
         {yTicks.map((t) => (
           <text key={`yl${t}`} x={PAD.l - 8} y={y(t) + 3} textAnchor="end" fontSize={10} fill="var(--color-ink-dim)">

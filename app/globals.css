@@ -12,11 +12,11 @@
   --color-edge-strong: #d8d8e3;
   --color-grid: #f4f4fa;
 
-  /* Text */
+  /* Text — darkened for readability (no light greys) */
   --color-ink: #0d0d12;
-  --color-ink-mid: #4d4d5a;
-  --color-ink-dim: #8a8a99;
-  --color-ink-faint: #b6b6c2;
+  --color-ink-mid: #2e2e3a;
+  --color-ink-dim: #4f4f5e;
+  --color-ink-faint: #6b6b7a;
 
   /* Accent: lavender (replaces cyan in legacy var name) */
   --color-cyan: #6b6bf5;

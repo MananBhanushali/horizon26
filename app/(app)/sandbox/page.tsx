@@ -10,8 +10,8 @@ import { buildProjection } from "@/data/projection";
 import { formatINR, formatPercent } from "@/lib/format";
 
 export default function SandboxPage() {
-  const { persona } = useApp();
-  const baseSIP = Math.max(0, persona.monthlyContribution);
+  const { persona, finances } = useApp();
+  const baseSIP = Math.max(0, finances.monthlySavings);
 
   const [sip, setSip] = useState(baseSIP);
   const [inflation, setInflation] = useState(5.5);
