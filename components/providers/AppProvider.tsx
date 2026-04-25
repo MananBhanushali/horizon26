@@ -16,10 +16,12 @@ const ONBOARDED_KEY = "v1.horizon26.onboarded"; // suffix: .{username}
 type Session = { username: string; personaId: Persona["id"]; remember: boolean } | null;
 
 type Settings = {
+  theme: "light" | "dark";
   notifications: { macro: boolean; tax: boolean; shortfall: boolean };
 };
 
 const defaultSettings: Settings = {
+  theme: "light",
   notifications: { macro: true, tax: true, shortfall: true },
 };
 
@@ -139,6 +141,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSession(next);
     setPersonaIdState(next.personaId);
   }, []);
+
+  // Keep a single DOM source-of-truth for theming.
+  useEffect(() => {
+    if (!hydrated) return;
+    document.documentElement.dataset.theme = settings.theme;
+    document.documentElement.style.colorScheme = settings.theme;
+  }, [hydrated, settings.theme]);
 
   // Hydrate from storage
   useEffect(() => {

@@ -18,7 +18,7 @@ const PROFILE_COLORS: Record<string, string> = {
 };
 
 export function TopBar() {
-  const { session, persona, personaId, switchUser, logout } = useApp();
+  const { session, persona, personaId, switchUser, logout, settings, updateSettings } = useApp();
   const router = useRouter();
   const [profileOpen, setProfileOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -40,7 +40,7 @@ export function TopBar() {
           {/* Hamburger — mobile/tablet only */}
           <button
             onClick={() => setDrawerOpen(true)}
-            className="lg:hidden grid place-items-center h-10 w-10 rounded-full bg-white text-[var(--color-ink)] hover:bg-white/90 shrink-0"
+            className="lg:hidden grid place-items-center h-10 w-10 rounded-full bg-[var(--color-panel)] text-[var(--color-ink)] hover:bg-[var(--color-grid)] shrink-0"
             aria-label="Open menu"
           >
             <MenuIcon />
@@ -54,7 +54,7 @@ export function TopBar() {
           <div className="ml-auto flex items-center gap-2 sm:gap-2.5 min-w-0">
             {/* Search — only on md+ */}
             <button
-              className="hidden md:flex items-center gap-2.5 rounded-full bg-white px-4 py-2.5 text-sm text-[var(--color-ink-dim)] hover:bg-white/90 min-w-[200px] xl:min-w-[260px]"
+              className="hidden md:flex items-center gap-2.5 rounded-full bg-[var(--color-panel)] px-4 py-2.5 text-sm text-[var(--color-ink-dim)] hover:bg-[var(--color-grid)] min-w-[200px] xl:min-w-[260px]"
               onClick={() => {
                 const ev = new KeyboardEvent("keydown", {
                   key: "k",
@@ -71,19 +71,29 @@ export function TopBar() {
 
             {/* Notifications */}
             <button
-              className="relative grid place-items-center h-10 w-10 rounded-full bg-white text-[var(--color-ink)] hover:bg-white/90 shrink-0"
+              className="relative grid place-items-center h-10 w-10 rounded-full bg-[var(--color-panel)] text-[var(--color-ink)] hover:bg-[var(--color-grid)] shrink-0"
               aria-label="Notifications"
               onClick={() => router.push("/alerts")}
             >
               <BellIcon />
               <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-[var(--color-warn)]" />
             </button>
+            <button
+              onClick={() =>
+                updateSettings({ theme: settings.theme === "dark" ? "light" : "dark" })
+              }
+              className="grid place-items-center h-10 w-10 rounded-full bg-[var(--color-panel)] text-[var(--color-ink)] hover:bg-[var(--color-grid)] shrink-0"
+              aria-label={`Switch to ${settings.theme === "dark" ? "light" : "dark"} mode`}
+              title={`Switch to ${settings.theme === "dark" ? "light" : "dark"} mode`}
+            >
+              {settings.theme === "dark" ? <SunIcon /> : <MoonIcon />}
+            </button>
 
             {/* Profile dropdown */}
             <div ref={ref} className="relative shrink-0">
               <button
                 onClick={() => setProfileOpen((v) => !v)}
-                className="flex items-center gap-2 rounded-full bg-white pl-1 pr-1 sm:pr-3 py-1 hover:bg-white/90"
+                className="flex items-center gap-2 rounded-full bg-[var(--color-panel)] pl-1 pr-1 sm:pr-3 py-1 hover:bg-[var(--color-grid)]"
                 aria-haspopup="menu"
                 aria-expanded={profileOpen}
               >
@@ -105,7 +115,7 @@ export function TopBar() {
               </button>
 
               {profileOpen && (
-                <div className="absolute right-0 mt-2 w-[280px] sm:w-[300px] rounded-2xl bg-white shadow-xl border border-[var(--color-edge)] p-2 z-40">
+                <div className="absolute right-0 mt-2 w-[280px] sm:w-[300px] rounded-2xl bg-[var(--color-panel)] shadow-xl border border-[var(--color-edge)] p-2 z-40">
                   <div className="px-3 py-2 text-[11px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
                     Switch user
                   </div>
@@ -186,6 +196,21 @@ function BellIcon() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 9a6 6 0 0 1 12 0v4l1.5 3h-15L6 13Z" />
       <path d="M10 19a2 2 0 0 0 4 0" />
+    </svg>
+  );
+}
+function SunIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" />
+    </svg>
+  );
+}
+function MoonIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <path d="M21 13.2A8.8 8.8 0 1 1 10.8 3a7.2 7.2 0 1 0 10.2 10.2Z" />
     </svg>
   );
 }

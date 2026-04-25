@@ -15,7 +15,7 @@ export function MobileNav() {
   const pathname = usePathname();
   return (
     <nav
-      className="lg:hidden fixed bottom-3 left-3 right-3 z-30 rounded-full bg-white shadow-lg border border-[var(--color-edge)]"
+      className="lg:hidden fixed bottom-3 left-3 right-3 z-30 rounded-full bg-[var(--color-panel)] shadow-lg border border-[var(--color-edge)]"
       aria-label="Mobile primary"
     >
       <ul className="grid grid-cols-5">

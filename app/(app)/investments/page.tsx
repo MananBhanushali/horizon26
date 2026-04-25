@@ -51,7 +51,7 @@ export default function InvestmentsPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <section className="rounded-3xl bg-white border border-[var(--color-edge)] p-6 shadow-sm">
+      <section className="rounded-3xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-6 shadow-sm">
         <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
           <div>
             <div className="text-base md:text-lg font-semibold tracking-tight">My investments</div>
@@ -100,7 +100,7 @@ export default function InvestmentsPage() {
         </div>
       </section>
 
-      <section className="rounded-3xl bg-white border border-[var(--color-edge)] p-6 shadow-sm">
+      <section className="rounded-3xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-6 shadow-sm">
         <div className="text-sm font-semibold mb-3">Suggested assets you can track</div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[780px] text-sm">
@@ -136,7 +136,7 @@ export default function InvestmentsPage() {
                           )
                         );
                       }}
-                      className="w-40 rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+                      className="w-40 rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-cyan)] focus:outline-none"
                     />
                   </td>
                   <td className="py-3 pr-3">
@@ -155,7 +155,7 @@ export default function InvestmentsPage() {
                             )
                           );
                         }}
-                        className="w-28 rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+                        className="w-28 rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-cyan)] focus:outline-none"
                       />
                       <span className="text-[var(--color-ink-dim)]">%</span>
                     </div>
@@ -222,7 +222,7 @@ function AddInvestmentDialog({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-3xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-6 shadow-xl">
         <div className="text-lg font-semibold tracking-tight">Add an investment</div>
         <div className="text-xs text-[var(--color-ink-dim)] mt-1 leading-relaxed">
           Track a new asset and include it in your weighted return used by timeline projections.
@@ -236,7 +236,7 @@ function AddInvestmentDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Nifty 50 Index Fund"
-              className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+              className="w-full rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-cyan)] focus:outline-none"
             />
           </Field>
 
@@ -244,7 +244,7 @@ function AddInvestmentDialog({
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as UserInvestment["category"])}
-              className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+              className="w-full rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] focus:border-[var(--color-cyan)] focus:outline-none"
             >
               {(["Equity", "Debt", "Gold", "Liquid"] as const).map((c) => (
                 <option key={c} value={c}>
@@ -261,7 +261,7 @@ function AddInvestmentDialog({
               min={0}
               step={500}
               onChange={(e) => setMonthly(Number(e.target.value))}
-              className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+              className="w-full rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] focus:border-[var(--color-cyan)] focus:outline-none"
             />
           </Field>
 
@@ -272,7 +272,7 @@ function AddInvestmentDialog({
               min={0}
               step={1000}
               onChange={(e) => setCurrentValue(Number(e.target.value))}
-              className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+              className="w-full rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] focus:border-[var(--color-cyan)] focus:outline-none"
             />
           </Field>
 
@@ -284,7 +284,7 @@ function AddInvestmentDialog({
               max={25}
               step={0.1}
               onChange={(e) => setAnnualReturn(Number(e.target.value))}
-              className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+              className="w-full rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] focus:border-[var(--color-cyan)] focus:outline-none"
             />
           </Field>
         </div>

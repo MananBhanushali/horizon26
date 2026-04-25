@@ -23,7 +23,7 @@ export function LeftRail() {
               className={`flex items-center gap-3 rounded-full px-4 py-3 text-sm font-medium transition-colors ${
                 active
                   ? "bg-[var(--color-pill-dark)] text-white shadow-md"
-                  : "text-[var(--color-ink)] hover:bg-white/60"
+                  : "text-[var(--color-ink)] hover:bg-[var(--color-grid)]"
               }`}
             >
               <span className="grid place-items-center h-5 w-5">{n.icon}</span>
@@ -33,7 +33,7 @@ export function LeftRail() {
         })}
       </div>
 
-      <div className="mt-4 pt-3 border-t border-white/70">
+      <div className="mt-4 pt-3 border-t border-[var(--color-edge)]">
         <div className="px-4 pb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
           Intelligence
         </div>
@@ -47,7 +47,7 @@ export function LeftRail() {
                 className={`flex items-center gap-3 rounded-full px-4 py-2 text-xs transition-colors ${
                   active
                     ? "bg-[var(--color-pill-dark)] text-white"
-                    : "text-[var(--color-ink-mid)] hover:bg-white/60 hover:text-[var(--color-ink)]"
+                    : "text-[var(--color-ink-mid)] hover:bg-[var(--color-grid)] hover:text-[var(--color-ink)]"
                 }`}
               >
                 <span className="grid place-items-center h-4 w-4">{n.icon}</span>

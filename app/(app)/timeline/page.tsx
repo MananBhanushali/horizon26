@@ -35,16 +35,16 @@ const ZOOMS = ["5Y", "10Y", "ALL"] as const;
 type Zoom = (typeof ZOOMS)[number];
 
 const CATEGORY_COLOR: Record<MilestoneCategory, string> = {
-  education: "#a3aef5",
-  home: "#34c08a",
-  wedding: "#e3b3d4",
-  vehicle: "#f0a93f",
-  business: "#6b6bf5",
-  retirement: "#7a87df",
-  travel: "#a8d5ba",
-  healthcare: "#ff6b6b",
-  legacy: "#c98919",
-  child: "#f5c89a",
+  education: "var(--color-equity)",
+  home: "var(--color-debt)",
+  wedding: "var(--color-wedding)",
+  vehicle: "var(--color-gold)",
+  business: "var(--color-business)",
+  retirement: "var(--color-retirement)",
+  travel: "var(--color-travel)",
+  healthcare: "var(--color-warn)",
+  legacy: "var(--color-legacy)",
+  child: "var(--color-child)",
 };
 
 const CATEGORY_ICON: Record<MilestoneCategory, ReactNode> = {
@@ -388,7 +388,7 @@ export default function TimelinePage() {
         {decorated.map((m) => (
           <div
             key={m.id}
-            className="text-left rounded-2xl bg-white border border-[var(--color-edge)] p-4 hover:shadow-md transition-shadow"
+            className="text-left rounded-2xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-4 hover:shadow-md transition-shadow"
           >
             <div className="flex items-start justify-between gap-2">
               <button onClick={() => setActiveId(m.id)} className="min-w-0 flex-1 text-left">
@@ -561,7 +561,7 @@ function InsightBanner({
       <div
         className="rounded-2xl px-5 py-4 mb-4 flex items-center gap-3 flex-wrap"
         style={{
-          background: "linear-gradient(135deg, var(--color-mint-soft) 0%, #ffffff 90%)",
+          background: "linear-gradient(135deg, var(--color-mint-soft) 0%, var(--color-panel) 90%)",
         }}
       >
         <div
@@ -586,7 +586,7 @@ function InsightBanner({
     <div
       className="rounded-2xl px-5 py-4 mb-4 flex items-center gap-3 flex-wrap"
       style={{
-        background: "linear-gradient(135deg, var(--color-warn-soft) 0%, #ffffff 90%)",
+        background: "linear-gradient(135deg, var(--color-warn-soft) 0%, var(--color-panel) 90%)",
       }}
     >
       <div
@@ -618,7 +618,7 @@ function InsightBanner({
 function ZoomToggle({ zoom, setZoom }: { zoom: Zoom; setZoom: (z: Zoom) => void }) {
   const labels: Record<Zoom, string> = { "5Y": "Next 5 yr", "10Y": "Next 10 yr", ALL: "Full life" };
   return (
-    <div className="rounded-full bg-white p-1 flex gap-1">
+    <div className="rounded-full bg-[var(--color-panel)] border border-[var(--color-edge)] p-1 flex gap-1">
       {ZOOMS.map((z) => (
         <button
           key={z}
@@ -875,7 +875,7 @@ function InteractiveTimeline({
               }}
             >
               <line x1={0} x2={0} y1={PAD.t - cy} y2={SVG_H - PAD.b - cy} stroke={color} strokeWidth={1} opacity={0.4} strokeDasharray="3 3" />
-              <circle r={11} fill="white" stroke={color} strokeWidth={2} />
+              <circle r={11} fill="var(--color-panel)" stroke={color} strokeWidth={2} />
               <circle r={4.25} fill={color} />
               <title>
                 {m.name} · age {m.age} · drag to reposition
@@ -899,7 +899,7 @@ function InteractiveTimeline({
 
       {hoverPt && !dragId && (
         <div
-          className="pointer-events-none absolute rounded-2xl bg-white/95 border border-[var(--color-edge)] shadow-lg px-3 py-2 text-[11px] leading-tight"
+          className="pointer-events-none absolute rounded-2xl bg-[var(--color-panel)]/95 border border-[var(--color-edge)] shadow-lg px-3 py-2 text-[11px] leading-tight"
           style={{ left: `${(x(hoverPt.age) / SVG_W) * 100}%`, top: 6, transform: "translateX(-50%)" }}
         >
           <div className="text-[var(--color-ink-dim)]">
@@ -1185,7 +1185,7 @@ function MilestoneEditor({
           type="text"
           value={milestone.name}
           onChange={(e) => onChange({ id: milestone.id, name: e.target.value })}
-          className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+          className="w-full rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-cyan)] focus:outline-none"
         />
       </Field>
 
@@ -1196,7 +1196,7 @@ function MilestoneEditor({
           min={18}
           max={100}
           onChange={(e) => onChange({ id: milestone.id, age: Number(e.target.value) })}
-          className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+          className="w-full rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-cyan)] focus:outline-none"
         />
       </Field>
 
@@ -1207,7 +1207,7 @@ function MilestoneEditor({
           min={0}
           step={10000}
           onChange={(e) => onChange({ id: milestone.id, nominalCost: Number(e.target.value) })}
-          className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+          className="w-full rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-cyan)] focus:outline-none"
         />
       </Field>
     </div>
@@ -1230,7 +1230,7 @@ function AddMilestoneDialog({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-3xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-6 shadow-xl">
         <div className="text-lg font-semibold tracking-tight">Add a goal</div>
         <div className="text-xs text-[var(--color-ink-dim)] mt-1 leading-relaxed">
           We'll deduct its cost (after inflation) from your corpus at the chosen age and keep
@@ -1245,7 +1245,7 @@ function AddMilestoneDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Apartment down-payment"
-              className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+              className="w-full rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-cyan)] focus:outline-none"
             />
           </Field>
 
@@ -1253,7 +1253,7 @@ function AddMilestoneDialog({
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as MilestoneCategory)}
-              className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+              className="w-full rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] focus:border-[var(--color-cyan)] focus:outline-none"
             >
               {(Object.keys(CATEGORY_ICON) as MilestoneCategory[]).map((c) => (
                 <option key={c} value={c}>
@@ -1281,7 +1281,7 @@ function AddMilestoneDialog({
               value={nominalCost}
               step={50000}
               onChange={(e) => setNominalCost(Number(e.target.value))}
-              className="w-full rounded-xl border border-[var(--color-edge)] bg-white px-3 py-2 text-sm focus:border-[var(--color-cyan)] focus:outline-none"
+              className="w-full rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] focus:border-[var(--color-cyan)] focus:outline-none"
             />
             <span className="text-[10px] text-[var(--color-ink-dim)] mt-1">
               Don't include inflation — we'll add that ourselves based on the age you picked.
@@ -1326,7 +1326,7 @@ function ConfirmDialog({
 }) {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 backdrop-blur-sm p-4">
-      <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-sm rounded-3xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-6 shadow-xl">
         <div className="text-base font-semibold tracking-tight">{title}</div>
         <div className="text-sm text-[var(--color-ink-mid)] mt-2 leading-relaxed">{body}</div>
         <div className="mt-5 flex items-center justify-end gap-2">
@@ -1368,7 +1368,7 @@ function SIPResultDialog({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-3xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-6 shadow-xl">
         <div className="text-base font-semibold tracking-tight">
           To fully fund "{result.name}"
         </div>

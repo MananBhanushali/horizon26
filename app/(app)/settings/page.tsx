@@ -17,14 +17,16 @@ export default function SettingsPage() {
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <TerminalPanel title="APPEARANCE">
-          <Row label="Theme" hint="Dark default; light mode is a P2 stretch.">
+          <Row label="Theme" hint="Choose your preferred appearance.">
             <select
-              disabled
               className="h-mono w-full rounded border border-[var(--color-edge)] bg-[var(--color-panel)] px-2.5 py-1.5 text-xs disabled:opacity-60"
-              defaultValue="dark"
+              value={settings.theme}
+              onChange={(e) =>
+                updateSettings({ theme: e.target.value as "light" | "dark" })
+              }
             >
-              <option value="dark">Dark (default)</option>
-              <option value="light">Light (coming soon)</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
             </select>
           </Row>
         </TerminalPanel>

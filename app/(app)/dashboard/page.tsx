@@ -141,7 +141,7 @@ function FinancesHero({
   }
 
   return (
-    <section className="rounded-3xl bg-white border border-[var(--color-edge)] p-6 shadow-sm">
+    <section className="rounded-3xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-6 shadow-sm">
       <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
         <div>
           <div className="text-lg md:text-xl font-semibold tracking-tight text-[var(--color-ink)]">
@@ -260,7 +260,7 @@ function FinancesTile({
       <div className="flex items-center justify-between mb-2">
         <div className="text-xs font-medium text-[var(--color-ink-mid)]">{label}</div>
         <span
-          className="grid place-items-center h-7 w-7 rounded-full bg-white text-[var(--color-ink)]"
+          className="grid place-items-center h-7 w-7 rounded-full bg-[var(--color-panel)] text-[var(--color-ink)]"
           aria-hidden
         >
           {icon}
@@ -300,7 +300,7 @@ function FinancesEditor({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-xl max-h-[92vh] overflow-auto">
+      <div className="w-full max-w-xl rounded-3xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-6 shadow-xl max-h-[92vh] overflow-auto">
         {isOnboarding && (
           <div className="mb-4 rounded-2xl bg-[var(--color-lavender-soft)] px-4 py-3 text-xs leading-relaxed text-[var(--color-ink)]">
             <span className="inline-flex items-center gap-1.5">
@@ -472,9 +472,9 @@ function NumberField({
           value={Number.isFinite(value) ? value : 0}
           onChange={(e) => onChange(Number(e.target.value))}
           placeholder={placeholder}
-          className={`w-full rounded-xl border placeholder:text-black placeholder:opacity-100 ${
-            compactInput ? "" : "bg-white"
-          } border-[var(--color-edge)] bg-white pl-7 pr-3 py-2.5 text-base tabular-nums focus:border-[var(--color-cyan)] focus:outline-none`}
+          className={`w-full rounded-xl border placeholder:text-[var(--color-ink-faint)] placeholder:opacity-100 ${
+            compactInput ? "" : "bg-[var(--color-panel)]"
+          } border-[var(--color-edge)] bg-[var(--color-panel)] pl-7 pr-3 py-2.5 text-base tabular-nums focus:border-[var(--color-cyan)] focus:outline-none`}
         />
       </div>
       {help && (
@@ -525,8 +525,8 @@ function PlanSummary({
       style={{
         background:
           tone === "ok"
-            ? "linear-gradient(135deg, var(--color-mint-soft) 0%, #ffffff 80%)"
-            : "linear-gradient(135deg, var(--color-warn-soft) 0%, #ffffff 80%)",
+            ? "linear-gradient(135deg, var(--color-mint-soft) 0%, var(--color-panel) 80%)"
+            : "linear-gradient(135deg, var(--color-warn-soft) 0%, var(--color-panel) 80%)",
       }}
     >
       <div
@@ -633,7 +633,7 @@ function Stat({
       ? "var(--color-mint-dim)"
       : "var(--color-ink)";
   return (
-    <div className="rounded-2xl bg-white/60 px-3 py-2">
+    <div className="rounded-2xl bg-[color-mix(in_srgb,var(--color-panel)_72%,transparent)] border border-[var(--color-edge)] px-3 py-2">
       <div className="text-[10px] uppercase tracking-wider text-[var(--color-ink-dim)]">
         {label}
       </div>
@@ -733,7 +733,7 @@ function BucketCard({
       href="/allocation"
       title={explain}
       className={`shrink-0 snap-start w-[200px] rounded-3xl p-5 flex flex-col justify-between min-h-[180px] transition-shadow hover:shadow-md ${
-        isLavender ? "h-card-lavender" : "bg-white border border-[var(--color-edge)]"
+        isLavender ? "h-card-lavender" : "bg-[var(--color-panel)] border border-[var(--color-edge)]"
       }`}
     >
       <div className="flex items-start justify-between">
@@ -767,10 +767,10 @@ function Instruments({
   const items = livePlan.scaledInstruments.slice(0, 5);
   const total = livePlan.scaledInstruments.reduce((acc, i) => acc + i.monthly, 0);
   const colors: Record<string, string> = {
-    Equity: "#a3aef5",
-    Debt: "#34c08a",
-    Gold: "#f0a93f",
-    Liquid: "#c8c8ff",
+    Equity: "var(--color-equity)",
+    Debt: "var(--color-debt)",
+    Gold: "var(--color-gold)",
+    Liquid: "var(--color-liquid)",
   };
 
   return (
@@ -803,7 +803,7 @@ function Instruments({
           >
             <span
               className="grid place-items-center h-11 w-11 rounded-full text-sm font-semibold text-white shrink-0"
-              style={{ background: colors[inst.category] ?? "#c8c8ff" }}
+              style={{ background: colors[inst.category] ?? "var(--color-liquid)" }}
             >
               {inst.category.charAt(0)}
             </span>
@@ -868,7 +868,7 @@ function MilestoneSnapshot({ livePlan }: { livePlan: LivePlan }) {
                   {onTrack ? `${Math.min(pct, 999)}% funded` : `−₹${compact(m.shortfallLive)}`}
                 </div>
               </div>
-              <div className="mt-2 h-2 rounded-full bg-white overflow-hidden">
+              <div className="mt-2 h-2 rounded-full bg-[var(--color-panel)] overflow-hidden">
                 <div
                   className="h-full rounded-full"
                   style={{

@@ -48,10 +48,78 @@
   --color-lavender-soft: #e5e5ff;
   --color-lavender-deep: #b3b3f5;
   --color-pill-dark: #0d0d12;
+
+  /* Category chips */
+  --color-equity: #a3aef5;
+  --color-debt: #34c08a;
+  --color-gold: #f0a93f;
+  --color-liquid: #c8c8ff;
+  --color-wedding: #e3b3d4;
+  --color-business: #6b6bf5;
+  --color-retirement: #7a87df;
+  --color-travel: #a8d5ba;
+  --color-legacy: #c98919;
+  --color-child: #f5c89a;
+  --color-logo-base: #213243;
 }
 
 :root {
   color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Low-contrast dark palette with clear text contrast */
+  --color-base: #171b26;
+  --color-panel: #1e2331;
+  --color-raised: #262d3d;
+  --color-edge: #31384a;
+  --color-edge-strong: #434c61;
+  --color-grid: #232a3a;
+
+  --color-ink: #edf1ff;
+  --color-ink-mid: #d8dff2;
+  --color-ink-dim: #b6bfd5;
+  --color-ink-faint: #9aa5c0;
+
+  --color-cyan: #a5acff;
+  --color-cyan-dim: #8c95f0;
+  --color-cyan-soft: #39415a;
+
+  --color-mint: #62d8a8;
+  --color-mint-dim: #41ba8a;
+  --color-mint-soft: #1f3b35;
+
+  --color-warn: #ff8b8b;
+  --color-warn-dim: #ff9a9a;
+  --color-warn-soft: #402f36;
+
+  --color-slate: #a3aef5;
+  --color-slate-dim: #909ce6;
+  --color-slate-soft: #2f3855;
+
+  --color-amber: #f4be69;
+  --color-amber-dim: #f4c27a;
+  --color-amber-soft: #413526;
+
+  /* Dark mode purple family: intentionally deeper and less neon */
+  --color-lavender: #3d335f;
+  --color-lavender-soft: #221c38;
+  --color-lavender-deep: #4c4275;
+  --color-pill-dark: #3a3458;
+
+  --color-equity: #7268b4;
+  --color-debt: #2f936d;
+  --color-gold: #af7f3d;
+  --color-liquid: #564f82;
+  --color-wedding: #8e5f8d;
+  --color-business: #6b63a9;
+  --color-retirement: #5d6aa1;
+  --color-travel: #4c7f71;
+  --color-legacy: #8d6a41;
+  --color-child: #8d6f58;
+  --color-logo-base: #9aa8c6;
 }
 
 html,
@@ -66,13 +134,13 @@ body {
 
 input::placeholder,
 textarea::placeholder {
-  color: #000000;
+  color: var(--color-ink-faint);
   opacity: 1;
 }
 
 input::-webkit-input-placeholder,
 textarea::-webkit-input-placeholder {
-  color: #000000;
+  color: var(--color-ink-faint);
   opacity: 1;
 }
 
@@ -136,9 +204,9 @@ body {
 /* Pastel banking card variants */
 .h-card-lavender {
   background: linear-gradient(180deg, var(--color-lavender) 0%, var(--color-lavender-deep) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--color-edge);
   border-radius: 24px;
-  box-shadow: 0 6px 20px -10px rgba(107, 107, 245, 0.35);
+  box-shadow: 0 6px 20px -10px color-mix(in srgb, var(--color-cyan) 35%, transparent);
   color: var(--color-ink);
 }
 
@@ -194,9 +262,9 @@ body {
 .h-shimmer {
   background: linear-gradient(
     90deg,
-    rgba(0, 0, 0, 0.04) 0%,
-    rgba(0, 0, 0, 0.08) 50%,
-    rgba(0, 0, 0, 0.04) 100%
+    color-mix(in srgb, var(--color-ink) 4%, transparent) 0%,
+    color-mix(in srgb, var(--color-ink) 10%, transparent) 50%,
+    color-mix(in srgb, var(--color-ink) 4%, transparent) 100%
   );
   background-size: 800px 100%;
   animation: h-shimmer 1.6s linear infinite;

@@ -90,7 +90,7 @@ export function MobileDrawer({
           </div>
           <button
             onClick={onClose}
-            className="grid place-items-center h-9 w-9 rounded-full bg-white text-[var(--color-ink)]"
+            className="grid place-items-center h-9 w-9 rounded-full bg-[var(--color-panel)] text-[var(--color-ink)]"
             aria-label="Close menu"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -112,7 +112,7 @@ export function MobileDrawer({
                   className={`flex items-center gap-3 rounded-full px-4 py-3 text-sm font-medium transition-colors ${
                     active
                       ? "bg-[var(--color-pill-dark)] text-white shadow-md"
-                      : "text-[var(--color-ink)] hover:bg-white/60"
+                      : "text-[var(--color-ink)] hover:bg-[var(--color-grid)]"
                   }`}
                 >
                   <span className="grid place-items-center h-5 w-5">{n.icon}</span>
@@ -122,7 +122,7 @@ export function MobileDrawer({
             })}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-white/70">
+          <div className="mt-4 pt-3 border-t border-[var(--color-edge)]">
             <div className="px-4 pb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
               Intelligence
             </div>
@@ -137,7 +137,7 @@ export function MobileDrawer({
                     className={`flex items-center gap-3 rounded-full px-4 py-2.5 text-sm transition-colors ${
                       active
                         ? "bg-[var(--color-pill-dark)] text-white"
-                        : "text-[var(--color-ink-mid)] hover:bg-white/60 hover:text-[var(--color-ink)]"
+                        : "text-[var(--color-ink-mid)] hover:bg-[var(--color-grid)] hover:text-[var(--color-ink)]"
                     }`}
                   >
                     <span className="grid place-items-center h-4 w-4">{n.icon}</span>
@@ -150,14 +150,14 @@ export function MobileDrawer({
         </nav>
 
         {/* Footer */}
-        <div className="px-4 pt-3 pb-5 border-t border-white/70">
+        <div className="px-4 pt-3 pb-5 border-t border-[var(--color-edge)]">
           <button
             onClick={() => {
               logout();
               onClose();
               router.push("/login");
             }}
-            className="w-full rounded-full bg-white text-[var(--color-warn-dim)] text-sm font-medium py-2.5 hover:bg-white/80"
+            className="w-full rounded-full bg-[var(--color-panel)] text-[var(--color-warn-dim)] text-sm font-medium py-2.5 hover:bg-[var(--color-grid)]"
           >
             Sign out
           </button>
