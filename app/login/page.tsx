@@ -47,7 +47,7 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-screen overflow-hidden">
       <div className="absolute inset-0 h-grid-bg opacity-30 pointer-events-none" />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--color-cyan)]/30 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-cyan/30 to-transparent" />
 
       <div className="relative grid place-items-center min-h-screen px-4 py-10">
         <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-stretch">
@@ -61,32 +61,43 @@ export default function LoginPage() {
                 H
               </div>
               <div className="leading-tight">
-                <div className="h-mono text-base tracking-[0.06em]">HORIZON TERMINAL</div>
+                <div className="h-mono text-base tracking-[0.06em]">
+                  HORIZON TERMINAL
+                </div>
                 <div className="h-tick">PROJECT HORIZON · PS-09 · v1</div>
               </div>
             </div>
 
             <div className="mt-8 lg:mt-0">
               <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight leading-tight">
-                Plan the life you want.<br />
-                <span className="text-[var(--color-cyan)]">See if your money agrees.</span>
+                Plan the life you want.
+                <br />
+                <span className="text-[var(--color-cyan)]">
+                  See if your money agrees.
+                </span>
               </h1>
               <p className="mt-4 max-w-md text-sm text-[var(--color-ink-mid)] leading-relaxed">
-                A financial planning terminal that simulates milestones, allocates with Black-Litterman,
-                and shows you <em className="text-[var(--color-ink)]">why</em> — not just <em className="text-[var(--color-ink)]">what</em>.
+                A financial planning terminal that simulates milestones,
+                allocates with Black-Litterman, and shows you{" "}
+                <em className="text-[var(--color-ink)]">why</em> — not just{" "}
+                <em className="text-[var(--color-ink)]">what</em>.
               </p>
               <ul className="mt-6 grid grid-cols-2 gap-2 text-[12.5px] text-[var(--color-ink-mid)]">
                 <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-cyan)]" /> Goal-based bucketing
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-cyan)]" />{" "}
+                  Goal-based bucketing
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-mint)]" /> Bull / Base / Bear
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-mint)]" />{" "}
+                  Bull / Base / Bear
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-amber)]" /> Macro-aware triggers
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-amber)]" />{" "}
+                  Macro-aware triggers
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-slate)]" /> Tax-adjusted returns
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-slate)]" />{" "}
+                  Tax-adjusted returns
                 </li>
               </ul>
             </div>
@@ -105,10 +116,15 @@ export default function LoginPage() {
             scanline
           >
             <div className="mb-3 rounded border border-[var(--color-amber-dim)]/40 bg-[var(--color-amber-soft)] px-3 py-2 text-[11.5px] text-[var(--color-amber)]">
-              ⚠ Demo auth only — credentials are visible in the bundle. Do <strong>not</strong> use real passwords.
+              ⚠ Demo auth only — credentials are visible in the bundle. Do{" "}
+              <strong>not</strong> use real passwords.
             </div>
 
-            <form onSubmit={onSubmit} className="flex flex-col gap-3" noValidate>
+            <form
+              onSubmit={onSubmit}
+              className="flex flex-col gap-3"
+              noValidate
+            >
               <Field label="USERNAME">
                 <input
                   type="text"
@@ -186,9 +202,13 @@ export default function LoginPage() {
                       className="text-left flex-1 hover:text-[var(--color-cyan)]"
                     >
                       <div>{u.username}</div>
-                      <div className="text-[10px] text-[var(--color-ink-dim)]">→ {u.personaId}</div>
+                      <div className="text-[10px] text-[var(--color-ink-dim)]">
+                        → {u.personaId}
+                      </div>
                     </button>
-                    <span className="text-[var(--color-ink-faint)]">{u.password}</span>
+                    <span className="text-[var(--color-ink-faint)]">
+                      {u.password}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -200,7 +220,13 @@ export default function LoginPage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="flex flex-col gap-1.5">
       <span className="h-tick">{label}</span>

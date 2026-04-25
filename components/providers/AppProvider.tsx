@@ -67,7 +67,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
     const onLogin = pathname === "/login";
-    if (!session && !onLogin) {
+    const onHome = pathname === "/";
+    if (!session && !onLogin && !onHome) {
       router.replace("/login");
     } else if (session && onLogin) {
       router.replace("/dashboard");
