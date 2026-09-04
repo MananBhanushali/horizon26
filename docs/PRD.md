@@ -1,4 +1,4 @@
-# Project Horizon (PS-09) - Product Requirements Document
+# Lakshaya (PS-09) - Product Requirements Document
 
 > Sibling docs: [Implementation Plan](./PLAN.md) - [Architecture](./ARCHITECTURE.md)
 
@@ -7,11 +7,11 @@
 | Field | Value |
 |---|---|
 | Project Code | PS-09 |
-| Project Name | Project Horizon |
+| Project Name | Lakshaya |
 | Version | 1.0 (Draft) |
 | Owner | Hack Tuah team |
 | Target Stack | Next.js 16 (App Router) + React 19 + Tailwind v4 + TypeScript |
-| Repo path | `horizon26/` |
+| Repo path | `lakshaya/` |
 
 ## 2. Vision
 
@@ -19,7 +19,7 @@
 
 ### 2.1 Core Insight
 
-Standard SIP calculators assume uninterrupted compounding. Real life has **drawdowns** - you buy a house at 32, your corpus resets, then it has to compound again toward the next goal. Project Horizon simulates this month-by-month, with each milestone cascading into the next.
+Standard SIP calculators assume uninterrupted compounding. Real life has **drawdowns** - you buy a house at 32, your corpus resets, then it has to compound again toward the next goal. Lakshaya simulates this month-by-month, with each milestone cascading into the next.
 
 ### 2.2 The Two Halves
 
@@ -44,7 +44,7 @@ If a milestone bucket falls short, the engine **auto-pulls from retirement** and
 
 ### 2.4 The Five Intelligence Layers
 
-Project Horizon is a **modular investment intelligence platform** that converts complex data into actionable allocation decisions with reasoning and confidence levels. It's **decision-driven**, not just data-driven.
+Lakshaya is a **modular investment intelligence platform** that converts complex data into actionable allocation decisions with reasoning and confidence levels. It's **decision-driven**, not just data-driven.
 
 ```text
 +------------------+     +----------------------+     +------------------+
@@ -135,11 +135,11 @@ Existing SIP / retirement calculators in India:
 - Risk profiling is dynamic, not a one-time questionnaire — it adjusts every time the user changes age, milestones, or income.
 
 
-Project Horizon answers a different question. Most calculators answer *"Can I afford X?"* Ours answers *"Given everything I want, what's the realistic plan?"* - including which goals need a loan, which need delay, and how risk should shift as life progresses.
+Lakshaya answers a different question. Most calculators answer *"Can I afford X?"* Ours answers *"Given everything I want, what's the realistic plan?"* - including which goals need a loan, which need delay, and how risk should shift as life progresses.
 
 ### 3.2 Key Differentiation
 
-| Traditional Tools | Project Horizon |
+| Traditional Tools | Lakshaya |
 |---|---|
 | Data-driven: show numbers | **Decision-driven**: show allocation + reasoning + confidence |
 | Single-goal calculators | **Multi-goal bucketing** with cascade effects |
@@ -361,7 +361,7 @@ Each persona below seeds the app with a complete, internally-consistent plan tha
 |---|---|---|
 | FR-38 | Login screen at `/login` with username + password fields, validates against a hardcoded list in `data/users.ts` | P1 |
 | FR-39 | Hardcoded user list of at least 6 entries (one per persona): `[{ username, password, personaId }]` - plain text, no hashing | P1 |
-| FR-40 | Session persisted to `localStorage` under key `v1.horizon26.session = { username }`; survives page reload | P1 |
+| FR-40 | Session persisted to `localStorage` under key `v1.lakshaya.session = { username }`; survives page reload | P1 |
 | FR-41 | Route guard: any planner route redirects to `/login` when no session exists | P1 |
 | FR-42 | On successful login, set the active persona to the user's `personaId` and route to `/` | P1 |
 | FR-43 | Logout button in header clears the session and routes to `/login` | P1 |
@@ -412,7 +412,7 @@ Each persona below seeds the app with a complete, internally-consistent plan tha
 
 - **Frontend-only build**: no backend, no API, no database, no server, no live ML inference. All complex computation (Black-Litterman optimization, macro forecasting) runs **offline at fixture-authoring time**. The shipped app renders pre-computed results.
 - **One-day hackathon timebox**: P0 must ship in one day. P1 (live engine + auth) is stretch.
-- Existing scaffold uses Tailwind v4 PostCSS plugin and Next 16 App Router (per `horizon26/AGENTS.md`).
+- Existing scaffold uses Tailwind v4 PostCSS plugin and Next 16 App Router (per `lakshaya/AGENTS.md`).
 
 ### 9.2 Black-Litterman MPT
 

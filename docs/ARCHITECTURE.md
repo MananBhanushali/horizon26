@@ -1,4 +1,4 @@
-# Project Horizon (PS-09) - System Design and Architecture
+# Lakshaya (PS-09) - System Design and Architecture
 
 > Sibling docs: [PRD](./PRD.md) - [Implementation Plan](./PLAN.md)
 
@@ -69,7 +69,7 @@ flowchart TB
 ## 2. Module / Folder Structure
 
 ```text
-horizon26/
+lakshaya/
 +-- app/
 |   +-- layout.tsx
 |   +-- page.tsx                      # orchestrator (client component)

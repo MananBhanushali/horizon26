@@ -17,9 +17,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Project Horizon",
+  title: "Lakshaya",
   description:
-    "Project Horizon — financial planning and portfolio intelligence terminal.",
+    "Lakshaya — financial planning and portfolio intelligence terminal.",
 };
 
 export default function RootLayout({

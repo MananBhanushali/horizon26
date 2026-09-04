@@ -12,7 +12,7 @@ type ChatMessage = {
 const INITIAL_MESSAGE: ChatMessage = {
   id: "welcome",
   role: "assistant",
-  text: "Hi, I am your Horizon financial and goal assistant. Ask me about SIPs, emergency funds, retirement, debt payoff, or monthly budgeting.",
+  text: "Hi, I am your Lakshaya financial and goal assistant. Ask me about SIPs, emergency funds, retirement, debt payoff, or monthly budgeting.",
 };
 
 const QUICK_PROMPTS = [
@@ -104,7 +104,7 @@ export function AssistantChatbot() {
           <header className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-edge)] bg-[var(--color-grid)]/60 rounded-t-2xl">
             <div>
               <p className="text-base font-semibold text-[var(--color-ink)]">
-                Horizon Assistant
+                Lakshaya Assistant
               </p>
               <p className="text-xs text-[var(--color-ink)]">
                 Ask anything about your finances and goals

@@ -1,4 +1,4 @@
-# Project Horizon (PS-09) - Implementation Plan
+# Lakshaya (PS-09) - Implementation Plan
 
 > Sibling docs: [PRD](./PRD.md) - [Architecture](./ARCHITECTURE.md)
 
@@ -23,7 +23,7 @@ Total: ~24 h for P0 (fits a one-day intense hackathon or two normal days).
 
 ### Phase 0 - Foundation (~2 h)
 
-- [ ] Create `horizon26/lib/types.ts` with the expanded type model (see [ARCHITECTURE.md](./ARCHITECTURE.md) section 3):
+- [ ] Create `lakshaya/lib/types.ts` with the expanded type model (see [ARCHITECTURE.md](./ARCHITECTURE.md) section 3):
   - `Persona`, `PersonaVariant`, `Milestone`, `Allocation`, `GlidePathPoint`
   - `MacroSnapshot`, `MacroImpact`, `RebalanceTrigger`
   - `TaxBreakdown`, `TaxRules`

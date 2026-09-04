@@ -52,7 +52,7 @@ export function Logo({ className }: { className?: string }) {
           Project
         </span>
         <span className="text-[var(--color-ink)] font-bold text-xl leading-none tracking-widest uppercase mt-1">
-          Horizon
+          Lakshaya
         </span>
       </div>
     </div>

@@ -223,9 +223,9 @@ export default function Index() {
             </Link>
           </div>
 
-          <div className="text-sm font-medium text-slate-600">
-            © 2024 Project Horizon. Premium Digital Assets.
-          </div>
+          <p className="text-sm opacity-50 font-mono tracking-tight text-center md:text-left">
+            © 2024 Lakshaya. Premium Digital Assets.
+          </p>
         </div>
       </footer>
     </div>

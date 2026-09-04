@@ -1,6 +1,6 @@
-# Horizon26 Documentation
+# Lakshaya Documentation
 
-Project specs for **Project Horizon (PS-09)** - an interactive lifetime financial timeline.
+Project specs for **Lakshaya (PS-09)** - an interactive lifetime financial timeline.
 
 - [PRD.md](./PRD.md) - product vision, user stories, requirements
 - [PLAN.md](./PLAN.md) - phased delivery plan and risks

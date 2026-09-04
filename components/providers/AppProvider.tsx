@@ -7,14 +7,14 @@ import { demoUsers } from "@/data/users";
 import { deriveLivePlan, type LivePlan } from "@/lib/livePlan";
 import type { Persona } from "@/lib/types";
 
-const SESSION_KEY = "v1.horizon26.session";
-const SETTINGS_KEY = "v1.horizon26.settings";
-const FINANCES_KEY = "v1.horizon26.finances"; // suffix: .{username}.{personaId}
-const INVESTMENTS_KEY = "v1.horizon26.investments"; // suffix: .{username}.{personaId}
-const ONBOARDED_KEY = "v1.horizon26.onboarded"; // suffix: .{username}
-const SAVINGS_GAME_KEY = "v1.horizon26.savingsGame"; // suffix: .{username}
-const SAVINGS_METRICS_KEY = "v1.horizon26.savingsMetrics"; // suffix: .{username}
-const FAMILY_MEMBERS_KEY = "v1.horizon26.familyMembers"; // suffix: .{username}
+const SESSION_KEY = "v1.lakshaya.session";
+const SETTINGS_KEY = "v1.lakshaya.settings";
+const FINANCES_KEY = "v1.lakshaya.finances"; // suffix: .{username}.{personaId}
+const INVESTMENTS_KEY = "v1.lakshaya.investments"; // suffix: .{username}.{personaId}
+const ONBOARDED_KEY = "v1.lakshaya.onboarded"; // suffix: .{username}
+const SAVINGS_GAME_KEY = "v1.lakshaya.savingsGame"; // suffix: .{username}
+const SAVINGS_METRICS_KEY = "v1.lakshaya.savingsMetrics"; // suffix: .{username}
+const FAMILY_MEMBERS_KEY = "v1.lakshaya.familyMembers"; // suffix: .{username}
 
 type Session = { username: string; personaId: Persona["id"]; remember: boolean } | null;
 
