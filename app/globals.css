@@ -1,0 +1,302 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", "Menlo", monospace;
+
+  /* Background layers — soft pastel banking */
+  --color-base: #eef0fb;
+  --color-panel: #ffffff;
+  --color-raised: #ffffff;
+  --color-edge: #ececf3;
+  --color-edge-strong: #d8d8e3;
+  --color-grid: #f4f4fa;
+
+  /* Text — darkened for readability (no light greys) */
+  --color-ink: #0d0d12;
+  --color-ink-mid: #0d0d12;
+  --color-ink-dim: #24242f;
+  --color-ink-faint: #31313d;
+
+  /* Accent: lavender (replaces cyan in legacy var name) */
+  --color-cyan: #6b6bf5;
+  --color-cyan-dim: #4f4fdb;
+  --color-cyan-soft: #c8c8ff;
+
+  /* Mint stays mint but softer */
+  --color-mint: #34c08a;
+  --color-mint-dim: #1f9b6b;
+  --color-mint-soft: #d4f3e5;
+
+  /* Warn — coral for negatives */
+  --color-warn: #ff6b6b;
+  --color-warn-dim: #d94343;
+  --color-warn-soft: #ffe0e0;
+
+  /* Slate — periwinkle */
+  --color-slate: #a3aef5;
+  --color-slate-dim: #7a87df;
+  --color-slate-soft: #e2e6ff;
+
+  /* Amber */
+  --color-amber: #f0a93f;
+  --color-amber-dim: #c98919;
+  --color-amber-soft: #ffeccc;
+
+  /* Banking-specific */
+  --color-lavender: #c8c8ff;
+  --color-lavender-soft: #e5e5ff;
+  --color-lavender-deep: #b3b3f5;
+  --color-pill-dark: #0d0d12;
+
+  /* Category chips */
+  --color-equity: #a3aef5;
+  --color-debt: #34c08a;
+  --color-gold: #f0a93f;
+  --color-liquid: #c8c8ff;
+  --color-wedding: #e3b3d4;
+  --color-business: #6b6bf5;
+  --color-retirement: #7a87df;
+  --color-travel: #a8d5ba;
+  --color-legacy: #c98919;
+  --color-child: #f5c89a;
+  --color-logo-base: #213243;
+  --color-chat-ink: #0d0d12;
+  --color-chat-ink-dim: #31313d;
+}
+
+:root {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Low-contrast dark palette with clear text contrast */
+  --color-base: #171b26;
+  --color-panel: #1e2331;
+  --color-raised: #262d3d;
+  --color-edge: #31384a;
+  --color-edge-strong: #434c61;
+  --color-grid: #232a3a;
+
+  --color-ink: #edf1ff;
+  --color-ink-mid: #d8dff2;
+  --color-ink-dim: #b6bfd5;
+  --color-ink-faint: #9aa5c0;
+
+  --color-cyan: #a5acff;
+  --color-cyan-dim: #8c95f0;
+  --color-cyan-soft: #39415a;
+
+  --color-mint: #62d8a8;
+  --color-mint-dim: #41ba8a;
+  --color-mint-soft: #1f3b35;
+
+  --color-warn: #ff8b8b;
+  --color-warn-dim: #ff9a9a;
+  --color-warn-soft: #402f36;
+
+  --color-slate: #a3aef5;
+  --color-slate-dim: #909ce6;
+  --color-slate-soft: #2f3855;
+
+  --color-amber: #f4be69;
+  --color-amber-dim: #f4c27a;
+  --color-amber-soft: #413526;
+
+  /* Dark mode purple family: intentionally deeper and less neon */
+  --color-lavender: #3d335f;
+  --color-lavender-soft: #221c38;
+  --color-lavender-deep: #4c4275;
+  --color-pill-dark: #3a3458;
+
+  --color-equity: #7268b4;
+  --color-debt: #2f936d;
+  --color-gold: #af7f3d;
+  --color-liquid: #564f82;
+  --color-wedding: #8e5f8d;
+  --color-business: #6b63a9;
+  --color-retirement: #5d6aa1;
+  --color-travel: #4c7f71;
+  --color-legacy: #8d6a41;
+  --color-child: #8d6f58;
+  --color-logo-base: #9aa8c6;
+  --color-chat-ink: #edf1ff;
+  --color-chat-ink-dim: #c6cee3;
+}
+
+html,
+body {
+  background: var(--color-base);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv01", "cv02";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-ink-faint);
+  opacity: 1;
+}
+
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: var(--color-ink-faint);
+  opacity: 1;
+}
+
+body {
+  background-image: none;
+  background-attachment: fixed;
+}
+
+/* Soft, pillowy panels */
+.h-panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-edge);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(15, 15, 30, 0.04);
+}
+
+.h-panel-raised {
+  background: var(--color-raised);
+  border: 1px solid var(--color-edge);
+  border-radius: 20px;
+  box-shadow: 0 4px 16px -8px rgba(15, 15, 30, 0.08);
+}
+
+.h-panel-active {
+  border-color: var(--color-cyan-soft);
+  box-shadow: 0 6px 20px -10px rgba(107, 107, 245, 0.35);
+}
+
+.h-grid-bg {
+  background-image: none;
+}
+
+.h-scanline {
+  position: relative;
+}
+.h-scanline::after {
+  content: "";
+  display: none;
+}
+
+.h-divider {
+  border-top: 1px solid var(--color-edge);
+}
+
+.h-mono {
+  font-family: var(--font-sans);
+  font-feature-settings: "tnum", "zero", "ss01";
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.h-tick {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+  font-weight: 500;
+}
+
+/* Pastel banking card variants */
+.h-card-lavender {
+  background: linear-gradient(180deg, var(--color-lavender) 0%, var(--color-lavender-deep) 100%);
+  border: 1px solid var(--color-edge);
+  border-radius: 24px;
+  box-shadow: 0 6px 20px -10px color-mix(in srgb, var(--color-cyan) 35%, transparent);
+  color: var(--color-ink);
+}
+
+.h-pill-dark {
+  background: var(--color-pill-dark);
+  color: #ffffff;
+  border-radius: 999px;
+}
+
+.h-circle-dark {
+  background: var(--color-pill-dark);
+  color: #ffffff;
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+}
+
+/* Focus visible */
+*:focus-visible {
+  outline: 2px solid var(--color-cyan);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Selection */
+::selection {
+  background: var(--color-lavender-deep);
+  color: var(--color-ink);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-edge-strong);
+  border-radius: 999px;
+  border: 2px solid var(--color-base);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-dim);
+}
+
+/* Shimmer loader */
+@keyframes h-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.h-shimmer {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-ink) 4%, transparent) 0%,
+    color-mix(in srgb, var(--color-ink) 10%, transparent) 50%,
+    color-mix(in srgb, var(--color-ink) 4%, transparent) 100%
+  );
+  background-size: 800px 100%;
+  animation: h-shimmer 1.6s linear infinite;
+}
+
+/* Pulse for live indicator */
+@keyframes h-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.h-pulse {
+  animation: h-pulse 1.6s ease-in-out infinite;
+}
+
+/* Small fade-in */
+@keyframes h-fade-in {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.h-fade-in {
+  animation: h-fade-in 180ms ease-out both;
+}
+
+/* Cross-fade for persona swap */
+@keyframes h-cross {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.h-cross {
+  animation: h-cross 220ms ease-out both;
+}
