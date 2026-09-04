@@ -68,7 +68,7 @@ export function LogoHorizontal({ className }: { className?: string }) {
           Project
         </span>
         <span className="text-[var(--color-ink)] font-bold text-sm leading-none tracking-widest uppercase mt-0.5">
-          Horizon
+          Lakshaya
         </span>
       </div>
     </div>

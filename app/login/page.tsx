@@ -115,7 +115,7 @@ export default function LoginPage() {
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-2xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-4 py-3 text-sm text-[var(--color-ink)] focus:border-[var(--color-cyan-dim)] focus:outline-none"
+              className="w-full rounded-2xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-4 py-3 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-dim)] focus:border-[var(--color-cyan-dim)] focus:outline-none"
               placeholder="aditya"
               aria-required
             />
@@ -126,7 +126,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-2xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-4 py-3 text-sm text-[var(--color-ink)] focus:border-[var(--color-cyan-dim)] focus:outline-none"
+              className="w-full rounded-2xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-4 py-3 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-dim)] focus:border-[var(--color-cyan-dim)] focus:outline-none"
               placeholder="demo123"
               aria-required
             />
