@@ -1,0 +1,290 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useApp } from "@/components/providers/AppProvider";
+import { demoUsers } from "@/data/users";
+import { personaById } from "@/data/personas";
+import { useRouter } from "next/navigation";
+import { LogoHorizontal } from "@/components/ui/Logo";
+import { MobileDrawer } from "@/components/shell/MobileDrawer";
+
+const PROFILE_COLORS: Record<string, string> = {
+  riya: "#a8d5ba",
+  aditya: "#a3aef5",
+  priya: "#e3b3d4",
+  vikram: "#f5c89a",
+  raj: "#b8e0d2",
+  sharma: "#c8c8ff",
+  family: "#7aa2ff",
+};
+
+export function TopBar() {
+  const {
+    session,
+    persona,
+    personaId,
+    switchUser,
+    logout,
+    settings,
+    updateSettings,
+  } = useApp();
+  const router = useRouter();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  // Click outside closes the profile menu
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setProfileOpen(false);
+    };
+    if (profileOpen) document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [profileOpen]);
+
+  return (
+    <>
+      <header className="sticky top-0 z-30 bg-[var(--color-base)]/85 backdrop-blur-md">
+        <div className="flex items-center gap-2 px-3 sm:px-4 lg:px-5 py-3">
+          {/* Hamburger — mobile/tablet only */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="lg:hidden grid place-items-center h-10 w-10 rounded-full bg-[var(--color-panel)] text-[var(--color-ink)] hover:bg-[var(--color-grid)] shrink-0"
+            aria-label="Open menu"
+          >
+            <MenuIcon />
+          </button>
+
+          {/* Brand */}
+          <div className="flex items-center shrink-0 min-w-0">
+            <LogoHorizontal className="-ml-1" />
+          </div>
+
+          <div className="ml-auto flex items-center gap-2 sm:gap-2.5 min-w-0">
+            {/* Search — only on md+ */}
+            <button
+              className="hidden md:flex items-center gap-2.5 rounded-full bg-[var(--color-panel)] px-4 py-2.5 text-sm text-[var(--color-ink-dim)] hover:bg-[var(--color-grid)] min-w-[200px] xl:min-w-[260px]"
+              onClick={() => {
+                const ev = new KeyboardEvent("keydown", {
+                  key: "k",
+                  metaKey: true,
+                  ctrlKey: true,
+                });
+                window.dispatchEvent(ev);
+              }}
+            >
+              <SearchIcon />
+              <span className="flex-1 text-left">Search anywhere</span>
+              <span className="text-[10px] text-[var(--color-ink-faint)]">
+                ⌘K
+              </span>
+            </button>
+
+            {/* Notifications */}
+            <button
+              className="relative grid place-items-center h-10 w-10 rounded-full bg-[var(--color-panel)] text-[var(--color-ink)] hover:bg-[var(--color-grid)] shrink-0"
+              aria-label="Notifications"
+              onClick={() => router.push("/alerts")}
+            >
+              <BellIcon />
+              <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-[var(--color-warn)]" />
+            </button>
+            <button
+              onClick={() =>
+                updateSettings({
+                  theme: settings.theme === "dark" ? "light" : "dark",
+                })
+              }
+              className="grid place-items-center h-10 w-10 rounded-full bg-[var(--color-panel)] text-[var(--color-ink)] hover:bg-[var(--color-grid)] shrink-0"
+              aria-label={`Switch to ${settings.theme === "dark" ? "light" : "dark"} mode`}
+              title={`Switch to ${settings.theme === "dark" ? "light" : "dark"} mode`}
+            >
+              {settings.theme === "dark" ? <SunIcon /> : <MoonIcon />}
+            </button>
+
+            {/* Profile dropdown */}
+            <div ref={ref} className="relative shrink-0">
+              <button
+                onClick={() => setProfileOpen((v) => !v)}
+                className="flex items-center gap-2 rounded-full bg-[var(--color-panel)] pl-1 pr-1 sm:pr-3 py-1 hover:bg-[var(--color-grid)]"
+                aria-haspopup="menu"
+                aria-expanded={profileOpen}
+              >
+                <span
+                  className="grid place-items-center h-9 w-9 rounded-full text-white text-sm font-semibold shrink-0"
+                  style={{ background: PROFILE_COLORS[personaId] ?? "#c8c8ff" }}
+                >
+                  {persona.name.charAt(0)}
+                </span>
+                <div className="hidden sm:block text-left leading-tight pr-1">
+                  <div className="text-sm font-semibold">{persona.name}</div>
+                  <div className="text-[10px] text-[var(--color-ink-dim)]">
+                    Sample profile · age {persona.age}
+                  </div>
+                </div>
+                <span className="hidden sm:inline">
+                  <ChevronDown />
+                </span>
+              </button>
+
+              {profileOpen && (
+                <div className="absolute right-0 mt-2 w-[280px] sm:w-[300px] rounded-2xl bg-[var(--color-panel)] shadow-xl border border-[var(--color-edge)] p-2 z-40">
+                  <div className="px-3 py-2 text-[11px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
+                    Switch user
+                  </div>
+                  <ul className="max-h-[240px] overflow-auto">
+                    {demoUsers.map((u) => {
+                      const active = u.username === session?.username;
+                      const linkedPersona = personaById(u.personaId);
+                      return (
+                        <li key={u.username}>
+                          <button
+                            onClick={() => {
+                              if (!active) switchUser(u.username);
+                              setProfileOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-left ${
+                              active
+                                ? "bg-[var(--color-lavender-soft)]"
+                                : "hover:bg-[var(--color-grid)]"
+                            }`}
+                          >
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate">
+                                @{u.username}
+                              </div>
+                              <div className="text-[11px] text-[var(--color-ink-dim)] truncate">
+                                {linkedPersona.name} · {linkedPersona.title}
+                              </div>
+                            </div>
+                            {active && (
+                              <span className="text-[var(--color-cyan-dim)] text-xs">
+                                ●
+                              </span>
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <div className="mt-1 pt-2 border-t border-[var(--color-edge)] flex items-center justify-between px-3 py-1">
+                    <span className="text-[11px] text-[var(--color-ink-dim)]">
+                      Signed in as @{session?.username}
+                    </span>
+                    <button
+                      onClick={() => {
+                        logout();
+                        router.push("/login");
+                      }}
+                      className="text-[11px] text-[var(--color-warn-dim)] hover:underline"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+    </>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+  );
+}
+function SearchIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </svg>
+  );
+}
+function BellIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M6 9a6 6 0 0 1 12 0v4l1.5 3h-15L6 13Z" />
+      <path d="M10 19a2 2 0 0 0 4 0" />
+    </svg>
+  );
+}
+function SunIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    >
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" />
+    </svg>
+  );
+}
+function MoonIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    >
+      <path d="M21 13.2A8.8 8.8 0 1 1 10.8 3a7.2 7.2 0 1 0 10.2 10.2Z" />
+    </svg>
+  );
+}
+function ChevronDown() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
