@@ -104,7 +104,13 @@ export default function Index() {
               href="/login"
               className="inline-flex items-center justify-center bg-white text-[#1E1B4B] border border-slate-200 px-6 py-3.5 rounded-xl font-medium text-base hover:bg-slate-50 transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-105 hover:-translate-y-0.5 hover:border-indigo-200"
             >
-              See Demo
+              Personal Demo
+            </Link>
+            <Link
+              href="/institutional-manager"
+              className="inline-flex items-center justify-center bg-indigo-50 text-indigo-700 border border-indigo-200 px-6 py-3.5 rounded-xl font-medium text-base hover:bg-indigo-100 transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-105 hover:-translate-y-0.5"
+            >
+              Institutional Manager
             </Link>
           </div>
         </div>

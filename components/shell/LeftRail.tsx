@@ -3,10 +3,14 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { PRIMARY_NAV, SECONDARY_NAV } from "./navConfig";
+import { useApp } from "@/components/providers/AppProvider";
+import { TimelineIcon, DonutIcon, TrendIcon, RefreshIcon, WalletIcon } from "./navConfig";
 
 export function LeftRail() {
   const pathname = usePathname();
   const search = useSearchParams();
+  const { activeClientId, clients } = useApp();
+  const activeClient = clients.find(c => c.id === activeClientId);
 
   return (
     <nav
@@ -32,6 +36,39 @@ export function LeftRail() {
           );
         })}
       </div>
+
+      {activeClient && (
+        <div className="mt-4 pt-3 border-t border-[var(--color-edge)]">
+          <div className="px-4 pb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">
+            Client: {activeClient.name.split(" ")[0]}
+          </div>
+          <div className="flex flex-col gap-1">
+            {[
+              { label: "Overview", href: `/client/${activeClient.id}`, icon: <WalletIcon /> },
+              { label: "Timeline", href: "/timeline", icon: <TimelineIcon /> },
+              { label: "Allocation", href: "/allocation", icon: <DonutIcon /> },
+              { label: "Investments", href: "/investments", icon: <TrendIcon /> },
+              { label: "Scenarios", href: "/sandbox", icon: <RefreshIcon /> },
+            ].map((n) => {
+              const active = isActive(pathname, search, n.href);
+              return (
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  className={`flex items-center gap-3 rounded-full px-4 py-2 text-xs transition-colors ${
+                    active
+                      ? "bg-[var(--color-pill-dark)] text-white"
+                      : "text-[var(--color-ink-mid)] hover:bg-[var(--color-grid)] hover:text-[var(--color-ink)]"
+                  }`}
+                >
+                  <span className="grid place-items-center h-4 w-4">{n.icon}</span>
+                  <span>{n.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 pt-3 border-t border-[var(--color-edge)]">
         <div className="px-4 pb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-ink-dim)]">

@@ -4,7 +4,6 @@ import "./globals.css";
 import { AppProvider } from "@/components/providers/AppProvider";
 import { ToastProvider } from "@/components/ui/ToastAlert";
 import { CommandBar } from "@/components/ui/CommandBar";
-import { AssistantChatbot } from "@/components/ui/AssistantChatbot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +34,6 @@ export default function RootLayout({
           <ToastProvider>
             {children}
             <CommandBar />
-            <AssistantChatbot />
           </ToastProvider>
         </AppProvider>
       </body>

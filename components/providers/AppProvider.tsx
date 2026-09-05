@@ -83,6 +83,13 @@ export type FamilyMember = {
   monthlyContribution: number;
 };
 
+export type Client = {
+  id: string;
+  name: string;
+  personaId: Persona["id"];
+  email: string;
+};
+
 function defaultFamilyMembers(): FamilyMember[] {
   return [
     {
@@ -176,6 +183,13 @@ type AppCtx = {
   login: (u: string, p: string, remember: boolean) => { ok: true } | { ok: false; error: string };
   switchUser: (username: string) => { ok: true } | { ok: false; error: string };
   logout: () => void;
+  clients: Client[];
+  activeClientId: string | null;
+  setActiveClientId: (id: string | null) => void;
+  addClient: (client: Omit<Client, "id">) => void;
+  deleteClient: (id: string) => void;
+  clientAUMs: Record<string, number>;
+  clientAllocations: Record<string, Record<string, number>>;
   personaId: Persona["id"];
   setPersonaId: (id: Persona["id"]) => void;
   persona: Persona;
@@ -217,6 +231,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [personaId, setPersonaIdState] = useState<Persona["id"]>("aditya");
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [hydrated, setHydrated] = useState(false);
+  const [clients, setClientsState] = useState<Client[]>([]);
+  const [activeClientId, setActiveClientIdState] = useState<string | null>(null);
   const [financesByKey, setFinancesByKey] = useState<Record<string, UserFinances>>({});
   const [investmentsByKey, setInvestmentsByKey] = useState<Record<string, UserInvestment[]>>({});
   const [onboardedUsers, setOnboardedUsers] = useState<Record<string, boolean>>({});
@@ -256,6 +272,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const sraw = localStorage.getItem(SETTINGS_KEY);
       if (sraw) setSettings({ ...defaultSettings, ...JSON.parse(sraw) });
 
+      localStorage.removeItem("v1.lakshaya.clients");
+      
       // Hydrate all finance entries + onboarded flags
       const finMap: Record<string, UserFinances> = {};
       const invMap: Record<string, UserInvestment[]> = {};
@@ -263,6 +281,59 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const gameMap: Record<string, SavingsGame> = {};
       const metricsMap: Record<string, SavingsCoachMetrics> = {};
       const familyMembersMap: Record<string, FamilyMember[]> = {};
+
+      const clientsRaw = localStorage.getItem("v1.lakshaya.clients");
+      if (clientsRaw) {
+        try { setClientsState(JSON.parse(clientsRaw)); } catch {}
+      } else {
+        const seededClients: Client[] = [
+          { id: "c1", name: "Aarav", personaId: "aditya", email: "aarav@example.com" },
+          { id: "c2", name: "Neha", personaId: "priya", email: "neha@example.com" },
+          { id: "c3", name: "Vikram", personaId: "riya", email: "vikram@example.com" },
+        ];
+        setClientsState(seededClients);
+        localStorage.setItem("v1.lakshaya.clients", JSON.stringify(seededClients));
+        
+        // Seed 2CR for c1
+        const c1FinKey = financesKeyFor("c1", "aditya");
+        const c1InvKey = investmentsKeyFor("c1", "aditya");
+        finMap[c1FinKey] = { monthlyIncome: 300000, monthlyExpenses: 100000, monthlySavings: 200000, emergencyFund: 500000, customized: true };
+        invMap[c1InvKey] = [
+          { id: "c1-eq", name: "Equity Portfolio", category: "Equity", monthly: 150000, currentValue: 16000000, annualReturn: 14 },
+          { id: "c1-db", name: "Debt Portfolio", category: "Debt", monthly: 50000, currentValue: 4000000, annualReturn: 7 }
+        ];
+
+        // Seed 2CR for c2
+        const c2FinKey = financesKeyFor("c2", "priya");
+        const c2InvKey = investmentsKeyFor("c2", "priya");
+        finMap[c2FinKey] = { monthlyIncome: 400000, monthlyExpenses: 200000, monthlySavings: 200000, emergencyFund: 1000000, customized: true };
+        invMap[c2InvKey] = [
+          { id: "c2-eq", name: "Equity Portfolio", category: "Equity", monthly: 100000, currentValue: 12000000, annualReturn: 12 },
+          { id: "c2-db", name: "Debt Portfolio", category: "Debt", monthly: 100000, currentValue: 8000000, annualReturn: 7 }
+        ];
+
+        // Seed 1CR for c3
+        const c3FinKey = financesKeyFor("c3", "riya");
+        const c3InvKey = investmentsKeyFor("c3", "riya");
+        finMap[c3FinKey] = { monthlyIncome: 100000, monthlyExpenses: 50000, monthlySavings: 50000, emergencyFund: 300000, customized: true };
+        invMap[c3InvKey] = [
+          { id: "c3-eq", name: "Equity Portfolio", category: "Equity", monthly: 10000, currentValue: 3000000, annualReturn: 10 },
+          { id: "c3-db", name: "Debt Portfolio", category: "Debt", monthly: 40000, currentValue: 7000000, annualReturn: 6 }
+        ];
+        
+        localStorage.setItem(c1FinKey, JSON.stringify(finMap[c1FinKey]));
+        localStorage.setItem(c1InvKey, JSON.stringify(invMap[c1InvKey]));
+        localStorage.setItem(c2FinKey, JSON.stringify(finMap[c2FinKey]));
+        localStorage.setItem(c2InvKey, JSON.stringify(invMap[c2InvKey]));
+        localStorage.setItem(c3FinKey, JSON.stringify(finMap[c3FinKey]));
+        localStorage.setItem(c3InvKey, JSON.stringify(invMap[c3InvKey]));
+      }
+
+      const activeClientRaw = localStorage.getItem("v1.lakshaya.activeClientId");
+      if (activeClientRaw) {
+        setActiveClientIdState(activeClientRaw);
+      }
+
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
         if (!k) continue;
@@ -342,6 +413,56 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPersonaIdState(id);
   }, []);
 
+  const setClients = useCallback((next: Client[]) => {
+    setClientsState(next);
+    try {
+      localStorage.setItem("v1.lakshaya.clients", JSON.stringify(next));
+    } catch {}
+  }, []);
+
+  const setActiveClientId = useCallback((id: string | null) => {
+    setActiveClientIdState(id);
+    try {
+      if (id) localStorage.setItem("v1.lakshaya.activeClientId", id);
+      else localStorage.removeItem("v1.lakshaya.activeClientId");
+    } catch {}
+  }, []);
+
+  const clientAUMs = useMemo(() => {
+    const aums: Record<string, number> = {};
+    clients.forEach(c => {
+      const pId = c.personaId;
+      const invs = investmentsByKey[investmentsKeyFor(c.id, pId)] || defaultInvestmentsFor(personas[pId as keyof typeof personas] || personas.riya);
+      aums[c.id] = invs.reduce((acc, i) => acc + i.currentValue, 0);
+    });
+    return aums;
+  }, [clients, investmentsByKey]);
+
+  const clientAllocations = useMemo(() => {
+    const allocs: Record<string, Record<string, number>> = {};
+    clients.forEach(c => {
+      const pId = c.personaId;
+      const invs = investmentsByKey[investmentsKeyFor(c.id, pId)] || defaultInvestmentsFor(personas[pId as keyof typeof personas] || personas.riya);
+      const buckets: Record<string, number> = {};
+      invs.forEach(i => {
+         buckets[i.category] = (buckets[i.category] || 0) + i.currentValue;
+      });
+      allocs[c.id] = buckets;
+    });
+    return allocs;
+  }, [clients, investmentsByKey]);
+
+  const addClient = useCallback((c: Omit<Client, "id">) => {
+    const newClient: Client = { ...c, id: `client-${Date.now()}` };
+    setClients((prev) => [...prev, newClient]);
+    return newClient;
+  }, [setClients]);
+
+  const deleteClient = useCallback((id: string) => {
+    setClients((prev) => prev.filter(c => c.id !== id));
+    if (activeClientId === id) setActiveClientId(null);
+  }, [activeClientId, setActiveClientId, setClients]);
+
   const updateSettings = useCallback((patch: Partial<Settings>) => {
     setSettings((s) => {
       const next = { ...s, ...patch };
@@ -360,18 +481,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [personaId]);
 
+  const currentKeyUser = activeClientId ?? session?.username;
+
   // Resolve current finances: persisted-for-this-(user,persona) ?? defaults
-  const finKey = financesKeyFor(session?.username, persona.id);
-  const invKey = investmentsKeyFor(session?.username, persona.id);
+  const finKey = financesKeyFor(currentKeyUser, persona.id);
+  const invKey = investmentsKeyFor(currentKeyUser, persona.id);
   const finances = useMemo<UserFinances>(() => {
     return financesByKey[finKey] ?? defaultFinancesFor(persona);
   }, [financesByKey, finKey, persona]);
   const investments = useMemo<UserInvestment[]>(() => {
     return investmentsByKey[invKey] ?? defaultInvestmentsFor(persona);
   }, [investmentsByKey, invKey, persona]);
-  const gameKey = savingsGameKeyFor(session?.username);
-  const metricsKey = savingsMetricsKeyFor(session?.username);
-  const familyMembersKey = familyMembersKeyFor(session?.username);
+  const gameKey = savingsGameKeyFor(currentKeyUser);
+  const metricsKey = savingsMetricsKeyFor(currentKeyUser);
+  const familyMembersKey = familyMembersKeyFor(currentKeyUser);
   const savingsGame = useMemo<SavingsGame>(() => {
     const fromStore = savingsGameByKey[gameKey];
     return {
@@ -693,6 +816,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     login,
     switchUser,
     logout,
+    clients,
+    activeClientId,
+    setActiveClientId,
+    addClient,
+    deleteClient,
+    clientAUMs,
+    clientAllocations,
     personaId,
     setPersonaId,
     persona,
