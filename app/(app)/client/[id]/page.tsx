@@ -10,7 +10,7 @@ import {
   suggestSavingsOpportunities,
   type LivePlan,
 } from "@/lib/livePlan";
-import { GoalMilestone } from "@/lib/types";
+import { Milestone } from "@/lib/types";
 import { formatINR } from "@/lib/format";
 import { AchievementBadge } from "@/components/ui/Badges";
 import { MonteCarloChart } from "@/components/charts/MonteCarloChart";
@@ -167,7 +167,6 @@ export default function ClientPage() {
              </div>
              <div className="mt-4 flex justify-between text-xs">
                <div className="text-[var(--color-warn-dim)] font-medium">95% VaR: ₹{(finances.emergencyFund * 1.5).toLocaleString()}</div>
-               <div className="text-[var(--color-mint-dim)] font-medium">Expected: ₹{(livePlan.finalCorpus * 1.1).toLocaleString()}</div>
              </div>
           </div>
         </div>
