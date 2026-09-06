@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Users, TrendingUp, Plus, Briefcase, ChevronRight } from "lucide-react";
+import { Users, TrendingUp, Plus, Briefcase, ChevronRight, Activity, Percent } from "lucide-react";
 import { useApp } from "@/components/providers/AppProvider";
+import { personas } from "@/data/personas";
+import { calculateAllocationMetrics } from "@/lib/portfolioMetrics";
 
 export default function FirmDashboard() {
   const { clients, addClient, clientAUMs, clientAllocations } = useApp();
@@ -19,6 +21,27 @@ export default function FirmDashboard() {
       aggregateAllocations[category] = (aggregateAllocations[category] || 0) + val;
     });
   });
+
+  // Calculate firm weighted Beta and CAGR
+  const { firmAvgBeta, firmAvgCagr } = useMemo(() => {
+    let weightedBetaSum = 0;
+    let weightedCagrSum = 0;
+    let totalClientWeight = 0;
+
+    clients.forEach((c) => {
+      const p = personas.find((x) => x.id === c.personaId) || personas[0];
+      const m = calculateAllocationMetrics(p.allocation, p.preTaxReturn);
+      const aum = clientAUMs[c.id] || 1;
+      weightedBetaSum += m.beta * aum;
+      weightedCagrSum += m.cagr * aum;
+      totalClientWeight += aum;
+    });
+
+    return {
+      firmAvgBeta: totalClientWeight > 0 ? (weightedBetaSum / totalClientWeight).toFixed(2) : "1.02",
+      firmAvgCagr: totalClientWeight > 0 ? (weightedCagrSum / totalClientWeight).toFixed(1) : "12.4",
+    };
+  }, [clients, clientAUMs]);
 
   const getPieSlicePaths = () => {
     const total = totalAUM || 1;
@@ -69,24 +92,44 @@ export default function FirmDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-[var(--color-panel)] border border-[var(--color-edge)] p-5 rounded-2xl shadow-sm">
-            <div className="flex items-center gap-2 text-[var(--color-ink-dim)] mb-2 font-medium text-sm">
-              <Briefcase className="w-4 h-4" /> Total AUM
+        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-[var(--color-panel)] border border-[var(--color-edge)] p-4 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-1.5 text-[var(--color-ink-dim)] mb-1 font-medium text-xs">
+              <Briefcase className="w-3.5 h-3.5" /> Total AUM
             </div>
-            <div className="text-3xl font-bold text-[var(--color-ink)]">₹{(totalAUM / 10000000).toFixed(2)}Cr</div>
-            <div className="text-xs text-[var(--color-mint-dim)] mt-2 font-medium flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" /> +4.2% this quarter
+            <div className="text-2xl font-bold text-[var(--color-ink)]">₹{(totalAUM / 10000000).toFixed(2)}Cr</div>
+            <div className="text-[11px] text-[var(--color-mint-dim)] mt-1 font-medium flex items-center gap-1">
+              <TrendingUp className="w-3 h-3" /> +4.2% QoQ
             </div>
           </div>
 
-          <div className="bg-[var(--color-panel)] border border-[var(--color-edge)] p-5 rounded-2xl shadow-sm">
-            <div className="flex items-center gap-2 text-[var(--color-ink-dim)] mb-2 font-medium text-sm">
-              <Users className="w-4 h-4" /> Active Clients
+          <div className="bg-[var(--color-panel)] border border-[var(--color-edge)] p-4 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-1.5 text-[var(--color-ink-dim)] mb-1 font-medium text-xs">
+              <Users className="w-3.5 h-3.5" /> Active Clients
             </div>
-            <div className="text-3xl font-bold text-[var(--color-ink)]">{clients.length}</div>
-            <div className="text-xs text-[var(--color-ink-dim)] mt-2 font-medium">
-              Manage your roster
+            <div className="text-2xl font-bold text-[var(--color-ink)]">{clients.length}</div>
+            <div className="text-[11px] text-[var(--color-ink-dim)] mt-1 font-medium">
+              Managed accounts
+            </div>
+          </div>
+
+          <div className="bg-[var(--color-panel)] border border-[var(--color-edge)] p-4 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-1.5 text-[var(--color-ink-dim)] mb-1 font-medium text-xs">
+              <Activity className="w-3.5 h-3.5" /> Portfolio Beta
+            </div>
+            <div className="text-2xl font-bold text-[var(--color-cyan)]">{firmAvgBeta}</div>
+            <div className="text-[11px] text-[var(--color-ink-dim)] mt-1 font-medium">
+              vs NIFTY 50 (1.00)
+            </div>
+          </div>
+
+          <div className="bg-[var(--color-panel)] border border-[var(--color-edge)] p-4 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-1.5 text-[var(--color-ink-dim)] mb-1 font-medium text-xs">
+              <Percent className="w-3.5 h-3.5" /> Expected CAGR
+            </div>
+            <div className="text-2xl font-bold text-[var(--color-mint-dim)]">{firmAvgCagr}%</div>
+            <div className="text-[11px] text-[var(--color-ink-dim)] mt-1 font-medium">
+              Firm weighted avg
             </div>
           </div>
         </div>
@@ -121,7 +164,7 @@ export default function FirmDashboard() {
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold tracking-tight text-[var(--color-ink)] mb-4">Client Roster</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-[var(--color-ink)] mb-4">Client Roster &amp; Factor Profiles</h2>
         {clients.length === 0 ? (
           <div className="bg-[var(--color-grid)] border border-[var(--color-edge)] p-8 rounded-2xl text-center">
             <p className="text-[var(--color-ink-dim)]">No clients added yet.</p>
@@ -134,27 +177,46 @@ export default function FirmDashboard() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {clients.map(client => (
-              <Link key={client.id} href={`/client/${client.id}`} className="block">
-                <div className="bg-[var(--color-panel)] border border-[var(--color-edge)] p-5 rounded-2xl hover:border-[var(--color-cyan)] transition-colors">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="font-medium text-[var(--color-ink)]">{client.name}</div>
-                    <ChevronRight className="w-4 h-4 text-[var(--color-ink-dim)]" />
-                  </div>
-                  <div className="flex justify-between items-end mt-4">
-                    <div className="flex flex-col gap-1">
-                       <div className="text-xs text-[var(--color-ink-dim)]">{client.email}</div>
-                       <div className="text-[10px] text-[var(--color-mint-dim)] font-medium bg-[var(--color-mint-dim)]/10 px-1.5 py-0.5 rounded w-max">
-                         XIRR: {client.personaId === 'aditya' ? '14.2' : client.personaId === 'priya' ? '12.8' : '11.5'}% vs Index: 12.0%
-                       </div>
+            {clients.map(client => {
+              const clientPersona = personas.find(p => p.id === client.personaId) || personas[0];
+              const clientMetrics = calculateAllocationMetrics(clientPersona.allocation, clientPersona.preTaxReturn);
+
+              return (
+                <Link key={client.id} href={`/client/${client.id}`} className="block">
+                  <div className="bg-[var(--color-panel)] border border-[var(--color-edge)] p-5 rounded-2xl hover:border-[var(--color-cyan)] transition-colors">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <div className="font-medium text-[var(--color-ink)]">{client.name}</div>
+                        <div className="text-xs text-[var(--color-ink-dim)]">{client.email}</div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-[var(--color-ink-dim)]" />
                     </div>
-                    <div className="text-sm font-semibold text-[var(--color-mint-dim)]">
-                      ₹{((clientAUMs[client.id] || 0) / 10000000).toFixed(2)}Cr
+
+                    {/* Factor badges: CAGR, Beta, Sharpe */}
+                    <div className="flex flex-wrap gap-1.5 my-3">
+                      <span className="text-[10px] text-[var(--color-mint-dim)] font-medium bg-[var(--color-mint-dim)]/10 px-2 py-0.5 rounded-full">
+                        CAGR: {clientMetrics.cagr}%
+                      </span>
+                      <span className="text-[10px] text-[var(--color-cyan)] font-medium bg-[var(--color-cyan)]/10 px-2 py-0.5 rounded-full">
+                        β: {clientMetrics.beta}
+                      </span>
+                      <span className="text-[10px] text-[var(--color-ink)] font-medium bg-[var(--color-grid)] px-2 py-0.5 rounded-full">
+                        Sharpe: {clientMetrics.sharpeRatio}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-end pt-2 border-t border-[var(--color-edge)]">
+                      <div className="text-[10px] text-[var(--color-mint-dim)] font-medium bg-[var(--color-mint-dim)]/10 px-1.5 py-0.5 rounded">
+                        XIRR: {client.personaId === 'aditya' ? '14.2' : client.personaId === 'priya' ? '12.8' : '11.5'}% vs Index: 12.0%
+                      </div>
+                      <div className="text-sm font-semibold text-[var(--color-ink)]">
+                        ₹{((clientAUMs[client.id] || 0) / 10000000).toFixed(2)}Cr
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useApp, type UserInvestment } from "@/components/providers/AppProvider";
 import { formatINR } from "@/lib/format";
+import { calculateInvestmentsMetrics, estimateAssetBeta, MARKET_BENCHMARK } from "@/lib/portfolioMetrics";
 
 const compact = (n: number) => formatINR(n, { compact: true }).replace("Rs. ", "");
 
@@ -34,6 +35,8 @@ export default function InvestmentsPage() {
         totalValue
       : livePlan.effectiveAnnualReturn;
 
+  const metrics = useMemo(() => calculateInvestmentsMetrics(draft), [draft]);
+
   const fundedGoals = livePlan.milestones.filter(
     (m) => m.statusLive === "ON_TRACK" || m.statusLive === "SURPLUS"
   ).length;
@@ -56,7 +59,7 @@ export default function InvestmentsPage() {
           <div>
             <div className="text-base md:text-lg font-semibold tracking-tight">My investments</div>
             <div className="text-xs text-[var(--color-ink-dim)] mt-0.5">
-              Track current value and expected return across all suggested assets.
+              Track current value, beta, CAGR, and quantitative risk across all portfolio assets.
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -84,13 +87,13 @@ export default function InvestmentsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <Tile label="Tracked assets" value={`${draft.length}`} sub="suggested instruments" />
           <Tile label="Current invested" value={`₹${compact(totalValue)}`} sub="across all assets" />
           <Tile
-            label="Weighted return"
-            value={`${weightedReturn.toFixed(2)}%`}
-            sub={`used in timeline instead of ${persona.preTaxReturn.toFixed(1)}%`}
+            label="Weighted Return / CAGR"
+            value={`${metrics.cagr.toFixed(2)}%`}
+            sub={`timeline baseline (${persona.preTaxReturn.toFixed(1)}% pre-tax)`}
           />
           <Tile
             label="Goals funded"
@@ -98,84 +101,152 @@ export default function InvestmentsPage() {
             sub={`retirement in ${yearsToRetirementGoal} years`}
           />
         </div>
+
+        {/* Portfolio Quantitative Factors Card */}
+        <div className="rounded-2xl border border-[var(--color-edge)] bg-[var(--color-grid)]/60 p-4">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-ink)]">
+                Portfolio Quantitative Factors
+              </span>
+              <span className="text-[10px] font-medium bg-[var(--color-mint-dim)]/15 text-[var(--color-mint-dim)] px-2 py-0.5 rounded-full">
+                Benchmark: {MARKET_BENCHMARK.name} (Rf: {MARKET_BENCHMARK.riskFreeRate}%)
+              </span>
+            </div>
+            <div className="text-[11px] text-[var(--color-ink-dim)]">
+              Defensive buffer: <strong className="text-[var(--color-ink)]">{metrics.defensiveRatio}%</strong>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 text-center">
+            <div className="rounded-xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-2.5">
+              <div className="text-[10px] uppercase font-semibold text-[var(--color-ink-dim)]">Portfolio Beta (β)</div>
+              <div className="mt-1 text-lg font-bold text-[var(--color-ink)] tabular-nums">{metrics.beta}</div>
+              <div className="text-[9px] text-[var(--color-ink-dim)] mt-0.5">
+                {metrics.beta < 0.8 ? "Conservative" : metrics.beta > 1.15 ? "Aggressive" : "Market neutral"}
+              </div>
+            </div>
+            <div className="rounded-xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-2.5">
+              <div className="text-[10px] uppercase font-semibold text-[var(--color-ink-dim)]">Expected CAGR</div>
+              <div className="mt-1 text-lg font-bold text-[var(--color-mint-dim)] tabular-nums">{metrics.cagr}%</div>
+              <div className="text-[9px] text-[var(--color-ink-dim)] mt-0.5">Compounded 3-5Y</div>
+            </div>
+            <div className="rounded-xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-2.5">
+              <div className="text-[10px] uppercase font-semibold text-[var(--color-ink-dim)]">Jensen's Alpha (α)</div>
+              <div className={`mt-1 text-lg font-bold tabular-nums ${metrics.alpha >= 0 ? "text-[var(--color-mint-dim)]" : "text-[var(--color-warn-dim)]"}`}>
+                {metrics.alpha >= 0 ? `+${metrics.alpha}%` : `${metrics.alpha}%`}
+              </div>
+              <div className="text-[9px] text-[var(--color-ink-dim)] mt-0.5">Excess vs CAPM</div>
+            </div>
+            <div className="rounded-xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-2.5">
+              <div className="text-[10px] uppercase font-semibold text-[var(--color-ink-dim)]">Sharpe Ratio</div>
+              <div className="mt-1 text-lg font-bold text-[var(--color-cyan)] tabular-nums">{metrics.sharpeRatio}</div>
+              <div className="text-[9px] text-[var(--color-ink-dim)] mt-0.5">Risk-adjusted</div>
+            </div>
+            <div className="rounded-xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-2.5">
+              <div className="text-[10px] uppercase font-semibold text-[var(--color-ink-dim)]">Sortino Ratio</div>
+              <div className="mt-1 text-lg font-bold text-[var(--color-ink)] tabular-nums">{metrics.sortinoRatio}</div>
+              <div className="text-[9px] text-[var(--color-ink-dim)] mt-0.5">Downside return</div>
+            </div>
+            <div className="rounded-xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-2.5">
+              <div className="text-[10px] uppercase font-semibold text-[var(--color-ink-dim)]">Est. Max DD</div>
+              <div className="mt-1 text-lg font-bold text-[var(--color-warn-dim)] tabular-nums">{metrics.maxDrawdown}%</div>
+              <div className="text-[9px] text-[var(--color-ink-dim)] mt-0.5">Stress trough</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="rounded-3xl bg-[var(--color-panel)] border border-[var(--color-edge)] p-6 shadow-sm">
         <div className="text-sm font-semibold mb-3">Suggested assets you can track</div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[780px] text-sm">
+          <table className="w-full min-w-[850px] text-sm">
             <thead>
               <tr className="text-left text-[11px] uppercase tracking-wider text-[var(--color-ink-dim)] border-b border-[var(--color-edge)]">
                 <th className="pb-2 pr-3">Asset</th>
                 <th className="pb-2 pr-3">Category</th>
+                <th className="pb-2 pr-3">Asset Beta (β)</th>
                 <th className="pb-2 pr-3">Suggested monthly</th>
                 <th className="pb-2 pr-3">Current value</th>
-                <th className="pb-2 pr-3">Expected annual return</th>
+                <th className="pb-2 pr-3">CAGR / Return</th>
                 <th className="pb-2 text-right">Action</th>
               </tr>
             </thead>
             <tbody>
-              {draft.map((inv) => (
-                <tr key={inv.id} className="border-b border-[var(--color-edge)] last:border-0">
-                  <td className="py-3 pr-3">
-                    <div className="font-medium">{inv.name}</div>
-                  </td>
-                  <td className="py-3 pr-3 text-[var(--color-ink-mid)]">{inv.category}</td>
-                  <td className="py-3 pr-3">₹{compact(Math.max(0, inv.monthly))}/mo</td>
-                  <td className="py-3 pr-3">
-                    <input
-                      type="number"
-                      min={0}
-                      step={1000}
-                      value={inv.currentValue}
-                      onChange={(e) => {
-                        const next = Number(e.target.value);
-                        setDraft((list) =>
-                          list.map((x) =>
-                            x.id === inv.id ? { ...x, currentValue: Number.isFinite(next) ? next : 0 } : x
-                          )
-                        );
-                      }}
-                      className="w-40 rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-cyan)] focus:outline-none"
-                    />
-                  </td>
-                  <td className="py-3 pr-3">
-                    <div className="flex items-center gap-2">
+              {draft.map((inv) => {
+                const assetBeta = estimateAssetBeta(inv.name, inv.category);
+                return (
+                  <tr key={inv.id} className="border-b border-[var(--color-edge)] last:border-0">
+                    <td className="py-3 pr-3">
+                      <div className="font-medium">{inv.name}</div>
+                    </td>
+                    <td className="py-3 pr-3 text-[var(--color-ink-mid)]">{inv.category}</td>
+                    <td className="py-3 pr-3">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium ${
+                        assetBeta > 1.2
+                          ? "bg-[var(--color-warn-dim)]/10 text-[var(--color-warn-dim)]"
+                          : assetBeta < 0.3
+                          ? "bg-[var(--color-mint-dim)]/10 text-[var(--color-mint-dim)]"
+                          : "bg-[var(--color-cyan)]/10 text-[var(--color-cyan)]"
+                      }`}>
+                        β {assetBeta.toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-3">₹{compact(Math.max(0, inv.monthly))}/mo</td>
+                    <td className="py-3 pr-3">
                       <input
                         type="number"
                         min={0}
-                        max={25}
-                        step={0.1}
-                        value={inv.annualReturn}
+                        step={1000}
+                        value={inv.currentValue}
                         onChange={(e) => {
                           const next = Number(e.target.value);
                           setDraft((list) =>
                             list.map((x) =>
-                              x.id === inv.id ? { ...x, annualReturn: Number.isFinite(next) ? next : 0 } : x
+                              x.id === inv.id ? { ...x, currentValue: Number.isFinite(next) ? next : 0 } : x
                             )
                           );
                         }}
-                        className="w-28 rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-cyan)] focus:outline-none"
+                        className="w-36 rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-cyan)] focus:outline-none"
                       />
-                      <span className="text-[var(--color-ink-dim)]">%</span>
-                    </div>
-                  </td>
-                  <td className="py-3 text-right">
-                    <button
-                      onClick={() => removeInvestment(inv.id)}
-                      className="text-xs text-[var(--color-warn-dim)] hover:underline underline-offset-2"
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="py-3 pr-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={0}
+                          max={25}
+                          step={0.1}
+                          value={inv.annualReturn}
+                          onChange={(e) => {
+                            const next = Number(e.target.value);
+                            setDraft((list) =>
+                              list.map((x) =>
+                                x.id === inv.id ? { ...x, annualReturn: Number.isFinite(next) ? next : 0 } : x
+                              )
+                            );
+                          }}
+                          className="w-24 rounded-xl border border-[var(--color-edge)] bg-[var(--color-panel)] px-3 py-2 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-cyan)] focus:outline-none"
+                        />
+                        <span className="text-[var(--color-ink-dim)]">%</span>
+                      </div>
+                    </td>
+                    <td className="py-3 text-right">
+                      <button
+                        onClick={() => removeInvestment(inv.id)}
+                        className="text-xs text-[var(--color-warn-dim)] hover:underline underline-offset-2"
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
         <p className="mt-3 text-xs text-[var(--color-ink-dim)] leading-relaxed">
-          Changes here immediately impact your goal projection baseline after saving. The timeline
-          uses this weighted return to estimate corpus growth and years to goal.
+          Changes here immediately recalculate your portfolio's weighted Beta, CAGR, and Sharpe ratio. The timeline
+          projection uses this weighted CAGR to estimate corpus growth and milestone feasibility.
         </p>
       </section>
 

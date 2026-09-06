@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { Sparkles } from "lucide-react";
@@ -14,6 +14,7 @@ import { Milestone } from "@/lib/types";
 import { formatINR } from "@/lib/format";
 import { AchievementBadge } from "@/components/ui/Badges";
 import { MonteCarloChart } from "@/components/charts/MonteCarloChart";
+import { calculateAllocationMetrics } from "@/lib/portfolioMetrics";
 
 export default function ClientPage() {
   const { id } = useParams<{ id: string }>();
@@ -48,6 +49,11 @@ export default function ClientPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const params = useSearchParams();
   const router = useRouter();
+
+  const portfolioMetrics = useMemo(
+    () => calculateAllocationMetrics(persona.allocation, livePlan.effectiveAnnualReturn),
+    [persona.allocation, livePlan.effectiveAnnualReturn]
+  );
 
   // First-visit onboarding: open the editor once, mark done whether they save or skip.
   useEffect(() => {
@@ -154,6 +160,56 @@ export default function ClientPage() {
         />
         <div className="flex flex-col gap-5">
           <AllocationCards persona={persona} />
+
+          {/* Quantitative Portfolio Factors (Beta, CAGR, Sharpe, Alpha) */}
+          <div className="bg-[var(--color-panel)] border border-[var(--color-edge)] p-5 rounded-2xl shadow-sm">
+             <div className="flex justify-between items-center mb-3">
+               <div>
+                 <div className="font-semibold text-sm text-[var(--color-ink)]">Quantitative Portfolio Factors</div>
+                 <div className="text-xs text-[var(--color-ink-dim)] mt-0.5">Key risk and return metrics benchmarked against NIFTY 50</div>
+               </div>
+               <div className="text-[10px] uppercase font-bold text-[var(--color-cyan)] bg-[var(--color-cyan)]/10 px-2 py-1 rounded">
+                 Beta &amp; CAGR
+               </div>
+             </div>
+             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-center">
+               <div className="rounded-xl bg-[var(--color-grid)] p-2.5">
+                 <div className="text-[10px] uppercase font-semibold text-[var(--color-ink-dim)]">Portfolio Beta (β)</div>
+                 <div className="mt-1 text-lg font-bold text-[var(--color-ink)] tabular-nums">{portfolioMetrics.beta}</div>
+                 <div className="text-[9px] text-[var(--color-ink-dim)] mt-0.5">
+                   {portfolioMetrics.beta < 0.8 ? "Defensive" : portfolioMetrics.beta > 1.15 ? "High sensitivity" : "Market neutral"}
+                 </div>
+               </div>
+               <div className="rounded-xl bg-[var(--color-grid)] p-2.5">
+                 <div className="text-[10px] uppercase font-semibold text-[var(--color-ink-dim)]">Expected CAGR</div>
+                 <div className="mt-1 text-lg font-bold text-[var(--color-mint-dim)] tabular-nums">{portfolioMetrics.cagr}%</div>
+                 <div className="text-[9px] text-[var(--color-ink-dim)] mt-0.5">Compounded 3-5Y</div>
+               </div>
+               <div className="rounded-xl bg-[var(--color-grid)] p-2.5">
+                 <div className="text-[10px] uppercase font-semibold text-[var(--color-ink-dim)]">Jensen's Alpha</div>
+                 <div className={`mt-1 text-lg font-bold tabular-nums ${portfolioMetrics.alpha >= 0 ? "text-[var(--color-mint-dim)]" : "text-[var(--color-warn-dim)]"}`}>
+                   {portfolioMetrics.alpha >= 0 ? `+${portfolioMetrics.alpha}%` : `${portfolioMetrics.alpha}%`}
+                 </div>
+                 <div className="text-[9px] text-[var(--color-ink-dim)] mt-0.5">vs CAPM model</div>
+               </div>
+               <div className="rounded-xl bg-[var(--color-grid)] p-2.5">
+                 <div className="text-[10px] uppercase font-semibold text-[var(--color-ink-dim)]">Sharpe Ratio</div>
+                 <div className="mt-1 text-lg font-bold text-[var(--color-cyan)] tabular-nums">{portfolioMetrics.sharpeRatio}</div>
+                 <div className="text-[9px] text-[var(--color-ink-dim)] mt-0.5">Risk-adjusted</div>
+               </div>
+               <div className="rounded-xl bg-[var(--color-grid)] p-2.5">
+                 <div className="text-[10px] uppercase font-semibold text-[var(--color-ink-dim)]">Sortino Ratio</div>
+                 <div className="mt-1 text-lg font-bold text-[var(--color-ink)] tabular-nums">{portfolioMetrics.sortinoRatio}</div>
+                 <div className="text-[9px] text-[var(--color-ink-dim)] mt-0.5">Downside return</div>
+               </div>
+               <div className="rounded-xl bg-[var(--color-grid)] p-2.5">
+                 <div className="text-[10px] uppercase font-semibold text-[var(--color-ink-dim)]">Est. Max DD</div>
+                 <div className="mt-1 text-lg font-bold text-[var(--color-warn-dim)] tabular-nums">{portfolioMetrics.maxDrawdown}%</div>
+                 <div className="text-[9px] text-[var(--color-ink-dim)] mt-0.5">Stress trough</div>
+               </div>
+             </div>
+          </div>
+
           <div className="bg-[var(--color-panel)] border border-[var(--color-edge)] p-5 rounded-2xl shadow-sm">
              <div className="flex justify-between items-center mb-2">
                <div className="font-semibold text-sm">Intelligence: Portfolio Stress Test</div>
@@ -167,6 +223,7 @@ export default function ClientPage() {
              </div>
              <div className="mt-4 flex justify-between text-xs">
                <div className="text-[var(--color-warn-dim)] font-medium">95% VaR: ₹{(finances.emergencyFund * 1.5).toLocaleString()}</div>
+               <div className="text-[var(--color-ink-mid)] font-medium">Volatility (σ): {portfolioMetrics.volatility}% · Beta: {portfolioMetrics.beta}</div>
              </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useApp } from "@/components/providers/AppProvider";
 import { TerminalPanel } from "@/components/ui/TerminalPanel";
 import { AllocationDonut, AllocationLegend, allocationPalette } from "@/components/charts/AllocationDonut";
@@ -7,10 +8,16 @@ import { GlidePathChart } from "@/components/charts/GlidePathChart";
 import { ConfidenceBadge } from "@/components/ui/Badges";
 import { PageHeader } from "@/components/PageHeader";
 import { formatINR, formatPercent } from "@/lib/format";
+import { calculateAllocationMetrics, MARKET_BENCHMARK } from "@/lib/portfolioMetrics";
 
 export default function AllocationPage() {
   const { persona, finances } = useApp();
   const monthlySIP = Math.max(0, finances.monthlySavings);
+
+  const metrics = useMemo(
+    () => calculateAllocationMetrics(persona.allocation, persona.preTaxReturn),
+    [persona.allocation, persona.preTaxReturn]
+  );
 
   const buckets: { label: string; key: keyof typeof allocationPalette }[] = [
     { label: "Equity", key: "equity" },
@@ -115,6 +122,50 @@ export default function AllocationPage() {
             <Mini label="Model fit" value={Math.min(100, persona.confidenceLevel + 4)} />
             <Mini label="Macro" value={Math.max(40, persona.confidenceLevel - 12)} />
             <Mini label="Horizon" value={Math.max(50, persona.confidenceLevel - 6)} />
+          </div>
+        </TerminalPanel>
+      </section>
+
+      <section className="mt-4">
+        <TerminalPanel
+          title="PORTFOLIO QUANTITATIVE FACTORS &amp; RISK PROFILE"
+          subtitle={`Benchmark: ${MARKET_BENCHMARK.name} · Risk-Free Rate: ${MARKET_BENCHMARK.riskFreeRate}%`}
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-center">
+            <div className="rounded border border-[var(--color-edge)] bg-[var(--color-panel)] p-3">
+              <div className="h-tick text-[10px]">PORTFOLIO BETA (β)</div>
+              <div className="h-mono text-xl font-bold mt-1 text-[var(--color-ink)]">{metrics.beta}</div>
+              <div className="text-[10px] text-[var(--color-ink-dim)] mt-0.5">
+                {metrics.beta < 0.8 ? "Conservative" : metrics.beta > 1.15 ? "Aggressive" : "Neutral"}
+              </div>
+            </div>
+            <div className="rounded border border-[var(--color-edge)] bg-[var(--color-panel)] p-3">
+              <div className="h-tick text-[10px]">EXPECTED CAGR</div>
+              <div className="h-mono text-xl font-bold mt-1 text-[var(--color-mint-dim)]">{metrics.cagr}%</div>
+              <div className="text-[10px] text-[var(--color-ink-dim)] mt-0.5">Annual compound</div>
+            </div>
+            <div className="rounded border border-[var(--color-edge)] bg-[var(--color-panel)] p-3">
+              <div className="h-tick text-[10px]">JENSEN'S ALPHA (α)</div>
+              <div className={`h-mono text-xl font-bold mt-1 ${metrics.alpha >= 0 ? "text-[var(--color-mint-dim)]" : "text-[var(--color-warn-dim)]"}`}>
+                {metrics.alpha >= 0 ? `+${metrics.alpha}%` : `${metrics.alpha}%`}
+              </div>
+              <div className="text-[10px] text-[var(--color-ink-dim)] mt-0.5">vs CAPM model</div>
+            </div>
+            <div className="rounded border border-[var(--color-edge)] bg-[var(--color-panel)] p-3">
+              <div className="h-tick text-[10px]">SHARPE RATIO</div>
+              <div className="h-mono text-xl font-bold mt-1 text-[var(--color-cyan)]">{metrics.sharpeRatio}</div>
+              <div className="text-[10px] text-[var(--color-ink-dim)] mt-0.5">Risk-adjusted</div>
+            </div>
+            <div className="rounded border border-[var(--color-edge)] bg-[var(--color-panel)] p-3">
+              <div className="h-tick text-[10px]">SORTINO RATIO</div>
+              <div className="h-mono text-xl font-bold mt-1 text-[var(--color-ink)]">{metrics.sortinoRatio}</div>
+              <div className="text-[10px] text-[var(--color-ink-dim)] mt-0.5">Downside metric</div>
+            </div>
+            <div className="rounded border border-[var(--color-edge)] bg-[var(--color-panel)] p-3">
+              <div className="h-tick text-[10px]">EST. MAX DD</div>
+              <div className="h-mono text-xl font-bold mt-1 text-[var(--color-warn-dim)]">{metrics.maxDrawdown}%</div>
+              <div className="text-[10px] text-[var(--color-ink-dim)] mt-0.5">Peak-to-trough</div>
+            </div>
           </div>
         </TerminalPanel>
       </section>

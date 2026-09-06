@@ -413,11 +413,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPersonaIdState(id);
   }, []);
 
-  const setClients = useCallback((next: Client[]) => {
-    setClientsState(next);
-    try {
-      localStorage.setItem("v1.lakshaya.clients", JSON.stringify(next));
-    } catch {}
+  const setClients = useCallback((action: Client[] | ((prev: Client[]) => Client[])) => {
+    setClientsState((prev) => {
+      const next = typeof action === "function" ? action(prev) : action;
+      try {
+        localStorage.setItem("v1.lakshaya.clients", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
   }, []);
 
   const setActiveClientId = useCallback((id: string | null) => {
@@ -432,7 +435,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const aums: Record<string, number> = {};
     clients.forEach(c => {
       const pId = c.personaId;
-      const invs = investmentsByKey[investmentsKeyFor(c.id, pId)] || defaultInvestmentsFor(personas[pId as keyof typeof personas] || personas.riya);
+      const targetPersona = personas.find(p => p.id === pId) || personas[0];
+      const invs = investmentsByKey[investmentsKeyFor(c.id, pId)] || defaultInvestmentsFor(targetPersona);
       aums[c.id] = invs.reduce((acc, i) => acc + i.currentValue, 0);
     });
     return aums;
@@ -442,7 +446,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const allocs: Record<string, Record<string, number>> = {};
     clients.forEach(c => {
       const pId = c.personaId;
-      const invs = investmentsByKey[investmentsKeyFor(c.id, pId)] || defaultInvestmentsFor(personas[pId as keyof typeof personas] || personas.riya);
+      const targetPersona = personas.find(p => p.id === pId) || personas[0];
+      const invs = investmentsByKey[investmentsKeyFor(c.id, pId)] || defaultInvestmentsFor(targetPersona);
       const buckets: Record<string, number> = {};
       invs.forEach(i => {
          buckets[i.category] = (buckets[i.category] || 0) + i.currentValue;
